@@ -1,0 +1,12 @@
+{
+  "name": "AGTDeliveryApp2",
+  "displayName": "AGTDeliveryApp2",
+  "expo": {
+    "name": "AGTDeliveryApp2",
+    "slug": "AGTDeliveryApp2",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
