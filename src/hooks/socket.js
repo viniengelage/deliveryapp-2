@@ -26,7 +26,10 @@ const SocketProvider = ({ token, children }) => {
     const toggleSwitch = async () => {
         if (!isEnabled) {
             socket.connect();
-            socket.on('connect', () => setIsEnabled(true));
+            socket.on('connect', () => {
+                setIsEnabled(true);
+                console.log(socket.connected);
+            });
         } else {
             socket.disconnect();
             setIsEnabled(false);

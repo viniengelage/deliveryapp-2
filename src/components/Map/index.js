@@ -1,9 +1,14 @@
 import React, { useRef, useEffect } from 'react';
 import { Image } from 'react-native';
-import MapboxGL, { Logger } from '@react-native-mapbox-gl/maps';
 import { useOrder } from 'hooks/order';
+import MapboxGL, { Logger } from '@react-native-mapbox-gl/maps';
 
 import iconCustomer from 'assets/customer.png';
+
+MapboxGL.setAccessToken(
+    'sk.eyJ1IjoibWFrZXBybyIsImEiOiJja2sycTVhbHUxM3doMm50MXY2cGMyNm1vIn0.5dAXsTBgBJrFsuXWNtjGvg'
+);
+MapboxGL.setConnected(true);
 
 Logger.setLogCallback((log) => {
     const { message } = log;
@@ -19,16 +24,8 @@ Logger.setLogCallback((log) => {
 const Map = ({ userLocation }) => {
     const mapRef = useRef(null);
 
-    const { locationOrders } = useOrder();
+    const { locationOrders, locationOrder, zoom } = useOrder();
 
-    useEffect(() => {
-        console.log(locationOrders);
-    }, []);
-
-    MapboxGL.setAccessToken(
-        'sk.eyJ1IjoibWFrZXBybyIsImEiOiJja2sxYzBlMG4wbWJzMnZvdGJjcG5vMnl1In0.NTukMNryrS_YoREYRPDctw'
-    );
-    MapboxGL.setConnected(true);
     return (
         <MapboxGL.MapView
             id="map"
@@ -41,7 +38,7 @@ const Map = ({ userLocation }) => {
         >
             {userLocation && (
                 <MapboxGL.Camera
-                    zoomLevel={18}
+                    zoomLevel={zoom}
                     centerCoordinate={[
                         userLocation.longitude,
                         userLocation.latitude,
@@ -52,6 +49,7 @@ const Map = ({ userLocation }) => {
             {locationOrders &&
                 locationOrders.map((singleOrder) => (
                     <MapboxGL.MarkerView
+                        key={singleOrder.id}
                         coordinate={[
                             singleOrder.longitude,
                             singleOrder.latitude,
@@ -65,6 +63,29 @@ const Map = ({ userLocation }) => {
                     </MapboxGL.MarkerView>
                 ))}
 
+            {locationOrder.latitude && (
+                <MapboxGL.MarkerView
+                    coordinate={[
+                        locationOrder.longitude,
+                        locationOrder.latitude,
+                    ]}
+                >
+                    <Image
+                        source={iconCustomer}
+                        style={{ width: 32, height: 32 }}
+                        resizeMode="contain"
+                    />
+                </MapboxGL.MarkerView>
+            )}
+            {locationOrder.latitude && (
+                <MapboxGL.Camera
+                    zoomLevel={zoom}
+                    centerCoordinate={
+                        ([userLocation.longitude, userLocation.latitude],
+                        [locationOrder.longitude, locationOrder.latitude])
+                    }
+                />
+            )}
             <MapboxGL.UserLocation showsUserHeadingIndicator />
         </MapboxGL.MapView>
     );

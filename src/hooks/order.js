@@ -17,6 +17,9 @@ const OrderProvider = ({ children }) => {
     const [sellerLocation, setSellerLocation] = useState({});
     const [userLocation, setUserLocation] = useState({});
     const [locationOrders, setLocationOrders] = useState([]);
+    const [locationOrder, setLocationOrder] = useState({});
+    const [orderLength, setOrderLength] = useState(0);
+    const [zoom, setZoom] = useState(18);
 
     const getPosition = useCallback(
         (options) =>
@@ -37,43 +40,62 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     const newOrder = useCallback((order) => {
+        console.log(order.orders.length);
+        console.log(order.orders[0]);
         if (order.orders.length > 1) {
-            console.log(order.orders);
             const customerAddresses = [];
             order.orders.map((singleOrder) =>
                 customerAddresses.push({
-                    latitude: singleOrder.customer_address.latitude,
-                    longitude: singleOrder.customer_address.longitude,
+                    id: singleOrder.id,
+                    latitude: Number(singleOrder.customer_address.latitude),
+                    longitude: Number(singleOrder.customer_address.longitude),
                 })
             );
-            console.log(customerAddresses);
+            setLocationOrders(customerAddresses);
         }
+        setLocationOrder({
+            latitude: Number(order.orders[0].customer_address.latitude),
+            longitude: Number(order.orders[0].customer_address.longitude),
+        });
+        setOrderLength(order.orders.length);
+        setZoom(12);
+        createNotification({
+            type: 'running',
+            text: 'Você recebeu um pedido de entrega',
+            buttonText: ['Aceitar', 'Recusar'],
+            buttonAction: [() => acceptOrder(order), () => declineOrder(order)],
+        });
     }, []);
     const showOrder = useCallback(async (order) => {}, []);
     const acceptOrder = useCallback(async (order) => {
         removeNotification();
         await services.put(`deliveries/${order.id}/accept`);
+        setSellerLocation({
+            latitude: order.orders[0].seller.address.latitude,
+            longitude: order.orders[0].seller.address.longitude,
+        });
         createNotification({
             type: 'running',
             text: 'Podemos começar?',
-            buttonText: ['Inicir'],
+            buttonText: ['Iniciar'],
             buttonAction: [() => initOrder(order)],
         });
-        setSellerLocation({
-            latitude: order.seller.address.latitude,
-            longitude: order.seller.address.longitude,
-        });
     }, []);
+
     const declineOrder = useCallback(async (order) => {
         await services.put(`deliveries/${order.id}/decline`);
         removeNotification();
     }, []);
-    const initOrder = useCallback(
-        async () => (
+    const initOrder = useCallback(() => {
+        removeNotification();
+        return (
             <Navigation destination={sellerLocation} origin={userLocation} />
-        ),
-        []
-    );
+        );
+    }, []);
+
+    const nextOrder = useCallback(async (order) => {
+        console.log(order);
+    }, []);
 
     return (
         <OrderContext.Provider
@@ -83,7 +105,11 @@ const OrderProvider = ({ children }) => {
                 initOrder,
                 declineOrder,
                 showOrder,
+                nextOrder,
                 locationOrders,
+                locationOrder,
+                orderLength,
+                zoom,
             }}
         >
             {children}

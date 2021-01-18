@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import MapboxGL from '@react-native-mapbox-gl/maps';
 import MapboxNavigation from '@homee/react-native-mapbox-navigation';
 import { Container } from './styles';
 
