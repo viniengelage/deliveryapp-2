@@ -1,34 +1,37 @@
 import React, { useEffect } from 'react';
 import MapboxNavigation from '@homee/react-native-mapbox-navigation';
-import { Container } from './styles';
+import { useOrder } from 'hooks/order';
+import { useNotification } from 'hooks/notification';
 
 const Navigation = ({ origin, destination }) => {
-    useEffect(() => {
-        console.log(origin, destination);
-    }, []);
-    const teste = {
-        longitude: '-54.5841703',
-        latitude: '-25.5441434',
-    };
-    const teste2 = {
-        longitude: '-54.5819816',
-        latitude: '-25.5441434',
-    };
+    const { registerLocation } = useOrder();
+    const { createNotification, removeNotification } = useNotification();
 
     return (
-        <MapboxNavigation
-            origin={[Number(teste.longitude), Number(teste.latitude)]}
-            destination={[Number(teste2.longitude), Number(teste2.latitude)]}
-            shouldSimulateRoute
-            onProgressChange={(event) => {
-                console.log(event);
-            }}
-            onError={(event) => {
-                const { message } = event.nativeEvent;
-                console.log(message);
-            }}
-            style={{ flex: 1, zIndex: 1 }}
-        />
+        <>
+            <MapboxNavigation
+                origin={[Number(origin.longitude), Number(origin.latitude)]}
+                destination={[
+                    Number(destination.longitude),
+                    Number(destination.latitude),
+                ]}
+                shouldSimulateRoute
+                onProgressChange={(event) => {
+                    const { latitude, longitude } = event.nativeEvent;
+                    registerLocation(latitude, longitude);
+                }}
+                onError={(event) => {
+                    // const { message } = event.nativeEvent;
+                    createNotification({
+                        type: 'push',
+                        text: 'Algum erro aconteceu.',
+                        buttonText: ['Recarregar página'],
+                        buttonAction: [() => removeNotification()],
+                    });
+                }}
+                style={{ flex: 1, zIndex: 1 }}
+            />
+        </>
     );
 };
 export default Navigation;

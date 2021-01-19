@@ -31,19 +31,12 @@ const Map = ({ userLocation }) => {
         zoom,
     } = useOrder();
 
-    useEffect(() => {
-        console.log(centerCoordinate);
-    }, []);
-
     return (
         <MapboxGL.MapView
             id="map"
             style={{ flex: 1, zIndex: 3 }}
             compassEnabled
             ref={mapRef}
-            onDidFinishRenderingMapFully={() => {
-                console.log('init map');
-            }}
         >
             {userLocation && (
                 <MapboxGL.Camera

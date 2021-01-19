@@ -45,12 +45,11 @@ const Init = () => {
         }
     }, []);
 
-    useEffect(() => {
-        if (
-            !PermissionsAndroid.check(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-            )
-        ) {
+    const checkPermission = useCallback(async () => {
+        const granted = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        if (!granted) {
             createNotification({
                 withBackground: true,
                 type: 'push',
@@ -59,6 +58,10 @@ const Init = () => {
                 buttonAction: [() => requestGpsPermission()],
             });
         }
+    }, []);
+
+    useEffect(() => {
+        checkPermission();
     }, []);
 
     return (

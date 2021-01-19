@@ -8,7 +8,6 @@ import {
     ButtonContainer,
     Button,
     Bar,
-    RunningSvg,
     Background,
 } from './styles';
 
@@ -63,7 +62,6 @@ const Notification = ({
                             </Button>
                         ))}
                     </ButtonContainer>
-                    <RunningSvg />
                 </AnimatedContainer>
             )}
         </>

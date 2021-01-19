@@ -35,6 +35,7 @@ export const Container = styled.View`
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             bottom: 0;
+            height: 140px;
         `}
 
     ${(props) =>
@@ -45,11 +46,7 @@ export const Container = styled.View`
 `;
 
 export const ButtonContainer = styled.View`
-    ${(props) =>
-        props.push &&
-        css`
-            flex-direction: row;
-        `}
+    flex-direction: row;
 `;
 export const Bar = styled.View`
     background-color: ${(props) => props.theme.colors.primary};

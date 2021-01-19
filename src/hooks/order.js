@@ -7,21 +7,41 @@ import React, {
 } from 'react';
 import Navigation from 'components/Navigation';
 import Geolocation from 'react-native-geolocation-service';
-import { getCenter } from 'geolib';
+import { getCenter, getDistance } from 'geolib';
 import { services } from 'services/api';
+import orderJSON from 'utils/order';
 import { useNotification } from './notification';
+import { useLoading } from './loading';
 
 const OrderContext = createContext({});
 
+const status = {
+    notStarted: 'Não iniciada',
+    onReceiving: 'Em direção ao restaurante',
+    onDelivery: 'Em direção ao seller',
+    received: 'Recebido',
+};
+
 const OrderProvider = ({ children }) => {
     const { createNotification, removeNotification } = useNotification();
-    const [sellerLocation, setSellerLocation] = useState({});
+    const { setLoading } = useLoading();
+
     const [userLocation, setUserLocation] = useState({});
+    const [destination, setDestination] = useState({});
+    const [onRunning, setOnRunning] = useState(false);
+
     const [locationOrders, setLocationOrders] = useState([]);
     const [locationOrder, setLocationOrder] = useState({});
+    const [hasManyOrders, setHasManyOrders] = useState(false);
+
     const [orderLength, setOrderLength] = useState(0);
+    const [currentOrder, setCurrentOrder] = useState(orderJSON.orders[0]);
+    const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
     const [centerCoordinate, setCenterCoordinate] = useState([]);
+
     const [initOrderStatus, setInitOrderStatus] = useState(false);
+    const [orderStatus, setOrderStatus] = useState(status.notStarted);
+
     const [zoom, setZoom] = useState(18);
 
     const getPosition = useCallback(
@@ -43,8 +63,8 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     const newOrder = useCallback(async (order) => {
-        console.log(order.orders.length);
-        console.log(order.orders[0]);
+        setOrderLength(order.orders.length);
+
         if (order.orders.length > 1) {
             const customerAddresses = [];
             order.orders.map((singleOrder) =>
@@ -57,7 +77,12 @@ const OrderProvider = ({ children }) => {
             setLocationOrders(customerAddresses);
             setCenterCoordinate(getCenter(customerAddresses));
         }
-        const orderLocation = {
+
+        if (order.orders.length > 1) {
+            setHasManyOrders(true);
+        }
+
+        const customerLocation = {
             latitude: Number(order.orders[0].customer_address.latitude),
             longitude: Number(order.orders[0].customer_address.longitude),
         };
@@ -66,12 +91,14 @@ const OrderProvider = ({ children }) => {
             coords: { latitude, longitude },
         } = await getPosition();
 
-        setCenterCoordinate(
-            getCenter([{ latitude, longitude }, orderLocation])
-        );
-        setLocationOrder(orderLocation);
-        setOrderLength(order.orders.length);
         setZoom(12);
+        setCenterCoordinate(
+            getCenter([{ latitude, longitude }, customerLocation])
+        );
+
+        setLocationOrder(customerLocation);
+        setCurrentOrder(order.orders[currentOrderIndex]);
+
         createNotification({
             type: 'running',
             text: 'Você recebeu um pedido de entrega',
@@ -79,11 +106,11 @@ const OrderProvider = ({ children }) => {
             buttonAction: [() => acceptOrder(order), () => declineOrder(order)],
         });
     }, []);
-    const showOrder = useCallback(async (order) => {}, []);
+
     const acceptOrder = useCallback(async (order) => {
         removeNotification();
         // await services.put(`deliveries/${order.id}/accept`);
-        setSellerLocation({
+        setDestination({
             latitude: order.orders[0].seller.address.latitude,
             longitude: order.orders[0].seller.address.longitude,
         });
@@ -99,13 +126,68 @@ const OrderProvider = ({ children }) => {
         // await services.put(`deliveries/${order.id}/decline`);
         removeNotification();
     }, []);
+
     const initOrder = useCallback(() => {
+        setOnRunning(true);
+        setOrderStatus(status.onReceiving);
         removeNotification();
         setInitOrderStatus(true);
     }, []);
 
+    const receivedOrder = useCallback(async () => {
+        setLoading(true);
+        setInitOrderStatus(false);
+
+        // await services.put(`deliveries/${order.id}/start`);
+
+        const {
+            coords: { latitude, longitude },
+        } = await getPosition();
+
+        setUserLocation({
+            latitude,
+            longitude,
+        });
+
+        setDestination({
+            latitude: currentOrder.latitude,
+            longitude: currentOrder.longitude,
+        });
+        setInitOrderStatus(true);
+        setLoading(false);
+    }, []);
+
     const nextOrder = useCallback(async (order) => {
-        console.log(order);
+        setInitOrderStatus(false);
+        setLoading(true);
+        if (currentOrderIndex === orderLength) {
+            finishOrder();
+        } else if (hasManyOrders) {
+            setCurrentOrder(currentOrderIndex + 1);
+            setDestination(order.orders[currentOrderIndex + 1]);
+        }
+    }, []);
+
+    const registerLocation = useCallback(async (latitude, longitude, order) => {
+        console.log(latitude, longitude);
+
+        if (status.onReceiving) {
+            const distance = getDistance(
+                { latitude, longitude },
+                {
+                    latitude: currentOrder.customer_address.latitude,
+                    longitude: currentOrder.customer_address.longitude,
+                }
+            );
+            if (distance < 100) {
+                createNotification({
+                    type: 'running',
+                    text: 'Você está perto.',
+                    buttonText: ['Entrega recebida'],
+                    buttonAction: [() => receivedOrder(order)],
+                });
+            }
+        }
     }, []);
 
     return (
@@ -115,13 +197,14 @@ const OrderProvider = ({ children }) => {
                 acceptOrder,
                 initOrder,
                 declineOrder,
-                showOrder,
                 nextOrder,
+                registerLocation,
+                onRunning,
                 userLocation,
-                sellerLocation,
+                destination,
                 initOrderStatus,
-                locationOrders,
                 locationOrder,
+                locationOrders,
                 orderLength,
                 centerCoordinate,
                 zoom,

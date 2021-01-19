@@ -12,7 +12,7 @@ const AuthContext = createContext({});
 
 const AuthProvider = ({ children }) => {
     const [data, setData] = useState({});
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     async function loadStoragedData() {
         const [access_token, user, status, id] = await AsyncStorage.multiGet([
