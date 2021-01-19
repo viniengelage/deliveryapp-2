@@ -24,7 +24,16 @@ Logger.setLogCallback((log) => {
 const Map = ({ userLocation }) => {
     const mapRef = useRef(null);
 
-    const { locationOrders, locationOrder, zoom } = useOrder();
+    const {
+        locationOrders,
+        locationOrder,
+        centerCoordinate,
+        zoom,
+    } = useOrder();
+
+    useEffect(() => {
+        console.log(centerCoordinate);
+    }, []);
 
     return (
         <MapboxGL.MapView
@@ -48,11 +57,36 @@ const Map = ({ userLocation }) => {
 
             {locationOrders &&
                 locationOrders.map((singleOrder) => (
+                    <>
+                        <MapboxGL.MarkerView
+                            key={singleOrder.id}
+                            coordinate={[
+                                singleOrder.longitude,
+                                singleOrder.latitude,
+                            ]}
+                        >
+                            <Image
+                                source={iconCustomer}
+                                style={{ width: 32, height: 32 }}
+                                resizeMode="contain"
+                            />
+                        </MapboxGL.MarkerView>
+                        <MapboxGL.Camera
+                            zoomLevel={zoom}
+                            centerCoordinate={[
+                                centerCoordinate.longitude,
+                                centerCoordinate.latitude,
+                            ]}
+                        />
+                    </>
+                ))}
+
+            {locationOrder.latitude && (
+                <>
                     <MapboxGL.MarkerView
-                        key={singleOrder.id}
                         coordinate={[
-                            singleOrder.longitude,
-                            singleOrder.latitude,
+                            locationOrder.longitude,
+                            locationOrder.latitude,
                         ]}
                     >
                         <Image
@@ -61,21 +95,14 @@ const Map = ({ userLocation }) => {
                             resizeMode="contain"
                         />
                     </MapboxGL.MarkerView>
-                ))}
-
-            {locationOrder.latitude && (
-                <MapboxGL.MarkerView
-                    coordinate={[
-                        locationOrder.longitude,
-                        locationOrder.latitude,
-                    ]}
-                >
-                    <Image
-                        source={iconCustomer}
-                        style={{ width: 32, height: 32 }}
-                        resizeMode="contain"
+                    <MapboxGL.Camera
+                        zoomLevel={zoom}
+                        centerCoordinate={[
+                            centerCoordinate.longitude,
+                            centerCoordinate.latitude,
+                        ]}
                     />
-                </MapboxGL.MarkerView>
+                </>
             )}
             {locationOrder.latitude && (
                 <MapboxGL.Camera

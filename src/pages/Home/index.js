@@ -8,10 +8,12 @@ import Geolocation from 'react-native-geolocation-service';
 import { useAuth } from 'hooks/auth';
 
 import Map from 'components/Map';
+import Navigation from 'components/Navigation';
 
 import { useNavigation } from '@react-navigation/native';
-import { useSocket } from 'hooks/socket';
 import { transactions } from 'services/api';
+import { useOrder } from 'hooks/order';
+import order from 'utils/order';
 import {
     Container,
     Header,
@@ -29,6 +31,7 @@ import {
     HeaderContainer,
     WalletContainer,
     WalletValue,
+    OrderButton,
 } from './styles';
 
 const styles = StyleSheet.create({
@@ -44,9 +47,9 @@ const Home = () => {
     const navigation = useNavigation();
     const { user } = useAuth();
     const { colors } = useTheme();
-    const { socket } = useSocket();
+    const { newOrder, sellerLocation, initOrderStatus } = useOrder();
 
-    const [userLocation, setUserLocation] = useState({});
+    const [userLocation, setUserLocation] = useState(null);
     const [balance, setBalance] = useState(0);
 
     const getWallet = useCallback(async () => {
@@ -104,18 +107,11 @@ const Home = () => {
                     </DateContainer>
                     <Bar />
                 </HeaderContainer>
+                <OrderButton onPress={() => newOrder(order, userLocation)}>
+                    <Icon name="archive" size={32} />
+                </OrderButton>
                 <MapContainer>
-                    {userLocation ? (
-                        <Map userLocation={userLocation} />
-                    ) : (
-                        <Spinner
-                            isVisible
-                            size={90}
-                            color={colors.secundary}
-                            type="Bounce"
-                            style={styles.spinner}
-                        />
-                    )}
+                    <Navigation />
                 </MapContainer>
             </Container>
         </>

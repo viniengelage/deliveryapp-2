@@ -5,9 +5,10 @@ import React, {
     useCallback,
     useEffect,
 } from 'react';
-import { services } from 'services/api';
 import Navigation from 'components/Navigation';
 import Geolocation from 'react-native-geolocation-service';
+import { getCenter } from 'geolib';
+import { services } from 'services/api';
 import { useNotification } from './notification';
 
 const OrderContext = createContext({});
@@ -19,6 +20,8 @@ const OrderProvider = ({ children }) => {
     const [locationOrders, setLocationOrders] = useState([]);
     const [locationOrder, setLocationOrder] = useState({});
     const [orderLength, setOrderLength] = useState(0);
+    const [centerCoordinate, setCenterCoordinate] = useState([]);
+    const [initOrderStatus, setInitOrderStatus] = useState(false);
     const [zoom, setZoom] = useState(18);
 
     const getPosition = useCallback(
@@ -39,7 +42,7 @@ const OrderProvider = ({ children }) => {
         });
     }, []);
 
-    const newOrder = useCallback((order) => {
+    const newOrder = useCallback(async (order) => {
         console.log(order.orders.length);
         console.log(order.orders[0]);
         if (order.orders.length > 1) {
@@ -52,11 +55,21 @@ const OrderProvider = ({ children }) => {
                 })
             );
             setLocationOrders(customerAddresses);
+            setCenterCoordinate(getCenter(customerAddresses));
         }
-        setLocationOrder({
+        const orderLocation = {
             latitude: Number(order.orders[0].customer_address.latitude),
             longitude: Number(order.orders[0].customer_address.longitude),
-        });
+        };
+
+        const {
+            coords: { latitude, longitude },
+        } = await getPosition();
+
+        setCenterCoordinate(
+            getCenter([{ latitude, longitude }, orderLocation])
+        );
+        setLocationOrder(orderLocation);
         setOrderLength(order.orders.length);
         setZoom(12);
         createNotification({
@@ -69,7 +82,7 @@ const OrderProvider = ({ children }) => {
     const showOrder = useCallback(async (order) => {}, []);
     const acceptOrder = useCallback(async (order) => {
         removeNotification();
-        await services.put(`deliveries/${order.id}/accept`);
+        // await services.put(`deliveries/${order.id}/accept`);
         setSellerLocation({
             latitude: order.orders[0].seller.address.latitude,
             longitude: order.orders[0].seller.address.longitude,
@@ -83,14 +96,12 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     const declineOrder = useCallback(async (order) => {
-        await services.put(`deliveries/${order.id}/decline`);
+        // await services.put(`deliveries/${order.id}/decline`);
         removeNotification();
     }, []);
     const initOrder = useCallback(() => {
         removeNotification();
-        return (
-            <Navigation destination={sellerLocation} origin={userLocation} />
-        );
+        setInitOrderStatus(true);
     }, []);
 
     const nextOrder = useCallback(async (order) => {
@@ -106,9 +117,13 @@ const OrderProvider = ({ children }) => {
                 declineOrder,
                 showOrder,
                 nextOrder,
+                userLocation,
+                sellerLocation,
+                initOrderStatus,
                 locationOrders,
                 locationOrder,
                 orderLength,
+                centerCoordinate,
                 zoom,
             }}
         >

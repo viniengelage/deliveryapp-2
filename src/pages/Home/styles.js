@@ -1,6 +1,19 @@
 import styled, { css } from 'styled-components/native';
 import { RectButton } from 'react-native-gesture-handler';
 
+export const OrderButton = styled(RectButton)`
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    background-color: ${(props) => props.theme.colors.secundary};
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    right: 0;
+    top: 120px;
+    z-index: 1;
+`;
+
 export const Container = styled.View`
     align-items: center;
     height: 100%;

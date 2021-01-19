@@ -6,4 +6,6 @@ export const Container = styled.View`
     height: 100%;
     justify-content: center;
     align-items: center;
+    position: absolute;
+    z-index: 1;
 `;
