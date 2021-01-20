@@ -160,11 +160,11 @@ const Home = () => {
                             </DateContainer>
                             <Bar />
                         </HeaderContainer>
-                        <OrderButton
+                        {/* <OrderButton
                             onPress={() => newOrder(order, userLocation)}
                         >
                             <Icon name="archive" size={32} />
-                        </OrderButton>
+                        </OrderButton> */}
                         <MapContainer>
                             {userLocation && (
                                 <Map userLocation={userLocation} />

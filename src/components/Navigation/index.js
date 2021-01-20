@@ -4,7 +4,7 @@ import { useOrder } from 'hooks/order';
 import { useNotification } from 'hooks/notification';
 
 const Navigation = ({ origin, destination }) => {
-    const { registerLocation, orderStatus, currentOrder } = useOrder();
+    const { registerLocation, orderStatus, currentOrder, orderId } = useOrder();
     const { createNotification, removeNotification } = useNotification();
 
     return (
@@ -23,7 +23,8 @@ const Navigation = ({ origin, destination }) => {
                             latitude,
                             longitude,
                             orderStatus,
-                            currentOrder
+                            currentOrder,
+                            orderId
                         );
                     }}
                     onError={() => {

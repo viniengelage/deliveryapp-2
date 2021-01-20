@@ -11,18 +11,14 @@ const SocketProvider = ({ token, children }) => {
     const { newOrder } = useOrder();
 
     const Ip = 'ws://agt-dvr-delivery.herokuapp.com/dvr';
-    const config = {
-        autoConnect: false,
-        transports: ['polling', 'websocket'],
-        transportOptions: {
-            polling: {
-                extraHeaders: {
-                    authorization: `${token}`,
-                },
-            },
-        },
-    };
-    const [socket] = useSocketIo(Ip, config);
+    const [socket] = useSocketIo(Ip);
+
+    socket.use((socket, next) => {
+        if (isValid(token)) {
+            return next();
+        }
+        return next(new Error('authentication error'));
+    });
 
     const toggleSwitch = async () => {
         if (!isEnabled) {
@@ -54,8 +50,9 @@ const SocketProvider = ({ token, children }) => {
 
     useEffect(() => {
         getConnectionStatus();
+        socket.on('errors', (data) => console.log(data));
         socket.on('receiveNewDelivery', newOrder);
-    }, []);
+    }, [token]);
 
     return (
         <Socket.Provider value={{ socket, isEnabled, toggleSwitch }}>

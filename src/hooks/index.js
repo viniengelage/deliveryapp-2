@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 
 import { useEffect, useState } from 'react/cjs/react.development';
 import AsyncStorage from '@react-native-community/async-storage';
+import AuthRoutes from 'routes/auth.routes';
 import { AuthProvider } from './auth';
 import { NotificationProvider } from './notification';
 import { LoadingProvider } from './loading';
@@ -35,7 +36,7 @@ const AppProvider = ({ children }) => {
                     </LoadingProvider>
                 </NotificationProvider>
             ) : (
-                <>{children}</>
+                <AuthRoutes />
             )}
         </AuthProvider>
     );

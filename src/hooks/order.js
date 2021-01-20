@@ -7,7 +7,8 @@ import React, {
 } from 'react';
 
 import Geolocation from 'react-native-geolocation-service';
-import useInterval from 'use-interval';
+// import useInterval from 'use-interval';
+import { PermissionsAndroid } from 'react-native';
 import { getCenter, getDistance } from 'geolib';
 import { orders, services } from 'services/api';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -72,6 +73,63 @@ const OrderProvider = ({ children }) => {
     //     onRunning ? 5000 : null,
     //     true
     // );
+    const requestGpsPermission = useCallback(async () => {
+        try {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                {
+                    title: 'Permita que possamos usar a localização',
+                    buttonNegative: 'Não',
+                    buttonPositive: 'OK',
+                }
+            );
+
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                removeNotification();
+            } else {
+                createNotification({
+                    withBackground: true,
+                    type: 'push',
+                    text:
+                        'Sem sua localização, não podemos te mostrar o melhor',
+                    buttonText: ['Denovo!'],
+                    buttonAction: [() => requestGpsPermission()],
+                });
+            }
+        } catch (error) {
+            createNotification({
+                withBackground: true,
+                type: 'push',
+                text:
+                    'Aconteceu um erro e não podemos continuar, tente novamente mais tarde.',
+                buttonText: ['Concluido'],
+                buttonAction: [() => removeNotification()],
+            });
+        }
+    }, []);
+
+    const checkPermission = useCallback(async () => {
+        const granted = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        if (!granted) {
+            createNotification({
+                withBackground: true,
+                type: 'push',
+                text: 'Precisamos de sua permissão para acessar a localização',
+                buttonText: ['Tudo bem!'],
+                buttonAction: [() => requestGpsPermission()],
+            });
+        } else {
+            getPosition().then((position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation({
+                    latitude,
+                    longitude,
+                });
+            });
+        }
+    }, []);
 
     const getStorageData = useCallback(async () => {
         const orderStatusStorage = await AsyncStorage.getItem('order_status');
@@ -121,15 +179,8 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        getPosition().then((position) => {
-            const { latitude, longitude } = position.coords;
-            setUserLocation({
-                latitude,
-                longitude,
-            });
-        });
-
-        getStorageData();
+        // getStorageData();
+        checkPermission();
     }, []);
 
     const newOrder = useCallback(async (order) => {
@@ -175,8 +226,8 @@ const OrderProvider = ({ children }) => {
             text: 'Você recebeu um pedido de entrega',
             buttonText: ['Aceitar', 'Recusar'],
             buttonAction: [
-                () => acceptOrder(order.orders[currentOrderIndex]),
-                () => declineOrder(order.orders[currentOrderIndex]),
+                () => acceptOrder(order.orders[currentOrderIndex], order.id),
+                () => declineOrder(order.orders[currentOrderIndex], order.id),
             ],
         });
         await AsyncStorage.setItem(
@@ -190,11 +241,11 @@ const OrderProvider = ({ children }) => {
         await AsyncStorage.setItem('order', JSON.stringify(order));
     }, []);
 
-    const acceptOrder = useCallback(async (order) => {
-        setOrderId(order.id);
+    const acceptOrder = useCallback(async (order, orderID) => {
+        setOrderId(orderID);
         removeNotification();
         setCurrentOrder(order);
-        // await services.put(`deliveries/${order.id}/accept`);
+        await services.put(`deliveries/${orderID}/accept`);
         setDestination({
             latitude: order.seller.address.latitude,
             longitude: order.seller.address.longitude,
@@ -208,8 +259,8 @@ const OrderProvider = ({ children }) => {
         await AsyncStorage.setItem('order_status', 'accepted');
     }, []);
 
-    const declineOrder = useCallback(async (order) => {
-        // await services.put(`deliveries/${order.id}/decline`);
+    const declineOrder = useCallback(async (order, orderID) => {
+        await services.put(`deliveries/${orderID}/decline`);
         removeNotification();
         setZoom(18);
         setCenterCoordinate({
@@ -226,14 +277,14 @@ const OrderProvider = ({ children }) => {
         removeNotification();
     }, []);
 
-    const receivedOrder = useCallback(async (orderCurrent) => {
+    const receivedOrder = useCallback(async (orderCurrent, orderID) => {
         setOrderStatus(status.onDelivery);
         removeNotification();
 
         setLoading(true);
         setInitOrderStatus(false);
 
-        // await services.put(`deliveries/${orderCurrent.id}/start`);
+        await services.put(`deliveries/${orderID}/start`);
 
         const {
             coords: { latitude, longitude },
@@ -257,7 +308,8 @@ const OrderProvider = ({ children }) => {
             order,
             currentOrderIndexParam,
             orderLengthParam,
-            hasManyOrdersParam
+            hasManyOrdersParam,
+            orderIdParam
         ) => {
             removeNotification();
 
@@ -270,9 +322,9 @@ const OrderProvider = ({ children }) => {
                 const address =
                     order.orders[currentOrderIndexParam + 1].customer_address;
                 console.log(address);
-                // await orders.put(
-                //     `orders/${order.orders[currentOrderIndex].id}/finalize`
-                // );
+                await orders.put(
+                    `orders/${order.orders[currentOrderIndex].id}/finalize`
+                );
                 createNotification({
                     type: 'extract',
                     text: 'Estes são os detalhes da sua próxima entrega:',
@@ -281,7 +333,7 @@ const OrderProvider = ({ children }) => {
                     buttonAction: [() => nextOrder(order)],
                 });
             } else {
-                finishOrder(order);
+                finishOrder(order, orderIdParam);
             }
         },
         []
@@ -307,8 +359,8 @@ const OrderProvider = ({ children }) => {
         );
     }, []);
 
-    const finishOrder = useCallback(async (order) => {
-        // await services.put(`deliveries/${order.id}/finalize`);
+    const finishOrder = useCallback(async (order, orderIdParam) => {
+        await services.put(`deliveries/${orderIdParam}/finalize`);
         setInitOrderStatus(false);
         setOnRunning(false);
         setCurrentOrder({});
@@ -342,7 +394,13 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     const registerLocation = useCallback(
-        async (latitude, longitude, statusOrder, currentOrderParam) => {
+        async (
+            latitude,
+            longitude,
+            statusOrder,
+            currentOrderParam,
+            orderID
+        ) => {
             if (statusOrder === status.onReceiving) {
                 const distance = getDistance(
                     { latitude, longitude },
@@ -357,7 +415,7 @@ const OrderProvider = ({ children }) => {
                         text: 'Você está perto.',
                         buttonText: ['Entrega recebida'],
                         buttonAction: [
-                            () => receivedOrder(currentOrderParam, orderId),
+                            () => receivedOrder(currentOrderParam, orderID),
                         ],
                     });
                 }
@@ -398,6 +456,7 @@ const OrderProvider = ({ children }) => {
                 registerLocation,
                 deliveryOrder,
                 onLocal,
+                orderId,
                 orderState,
                 orderStatus,
                 currentOrder,

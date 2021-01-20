@@ -44,6 +44,11 @@ allprojects {
                 password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: "sk.eyJ1IjoidmluaWVuZ2VsYWdlIiwiYSI6ImNrajd4aGVoeTN2NTgzMHJ3bTE5N2w1aHYifQ.5VHkLiwRKe8Ipi5BbLmQXQ"
             }
         }
+        configurations.matching { it.name == '_internal_aapt2_binary' }.all { config ->
+        config.resolutionStrategy.eachDependency { details ->
+            details.useVersion("3.5.0-alpha03-5252756")
+        }
+    }
 
         google()
         jcenter()
