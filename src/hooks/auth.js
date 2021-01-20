@@ -6,7 +6,7 @@ import React, {
     useEffect,
 } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
-import { auth, services, transactions } from '../services/api';
+import { auth, orders, services, transactions } from '../services/api';
 
 const AuthContext = createContext({});
 
@@ -26,6 +26,7 @@ const AuthProvider = ({ children }) => {
             auth.defaults.headers.authorization = `Bearer ${access_token[1]}`;
             services.defaults.headers.authorization = `Bearer ${access_token[1]}`;
             transactions.defaults.headers.authorization = `Bearer ${access_token[1]}`;
+            orders.defaults.headers.authorization = `Bearer ${access_token[1]}`;
             setData({
                 access_token: access_token[1],
                 user: JSON.parse(user[1]),
@@ -52,6 +53,7 @@ const AuthProvider = ({ children }) => {
         auth.defaults.headers.authorization = `Bearer ${access_token}`;
         services.defaults.headers.authorization = `Bearer ${access_token}`;
         transactions.defaults.headers.authorization = `Bearer ${access_token}`;
+        orders.defaults.headers.authorization = `Bearer ${access_token}`;
 
         const responseMe = await auth.get('auth/me');
 

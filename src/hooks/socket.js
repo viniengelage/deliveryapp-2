@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 import useSocketIo from 'use-socket.io-client';
@@ -30,13 +31,29 @@ const SocketProvider = ({ token, children }) => {
                 setIsEnabled(true);
                 console.log(socket.connected);
             });
+            await AsyncStorage.setItem('statusSocket', 'connected');
         } else {
             socket.disconnect();
+            await AsyncStorage.setItem('statusSocket', 'disconnect');
             setIsEnabled(false);
         }
     };
 
+    const getConnectionStatus = async () => {
+        const status = await AsyncStorage.getItem('statusSocket');
+
+        if (status === 'connected') {
+            if (!socket.connected) {
+                socket.on('connected', () => {
+                    setIsEnabled(true);
+                    console.log(socket.connected);
+                });
+            }
+        }
+    };
+
     useEffect(() => {
+        getConnectionStatus();
         socket.on('receiveNewDelivery', newOrder);
     }, []);
 

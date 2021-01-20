@@ -118,3 +118,17 @@ export const MapContainer = styled.View`
     border-top-width: 6px;
     border-color: ${(props) => props.theme.colors.primary};
 `;
+
+export const DetailContainer = styled(RectButton)`
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+
+    position: absolute;
+    right: 30px;
+    bottom: 160px;
+
+    background-color: ${(props) => props.theme.colors.secundary};
+    justify-content: center;
+    align-items: center;
+`;

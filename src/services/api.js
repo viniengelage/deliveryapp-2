@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
 
@@ -15,6 +16,15 @@ export const transactions = axios.create({
     // baseURL: 'https://services.agoratem.com.br/transaction',
 });
 
+export const orders = axios.create({
+    baseURL: 'https://agt-ord-order.herokuapp.com/ord',
+});
+
+const getKey = async () => {
+    const access_token = await AsyncStorage.getItem('access_token');
+    return access_token;
+};
+
 const refreshAuthLogic = (failedRequest) =>
     axios
         .post(
@@ -22,27 +32,27 @@ const refreshAuthLogic = (failedRequest) =>
             {},
             {
                 headers: {
-                    authorization: `Bearer ${localStorage.getItem(
-                        '@AgoraTem:access_token'
-                    )}`,
+                    authorization: `Bearer ${getKey()}`,
                 },
             }
         )
-        .then((tokenRefreshResponse) => {
-            localStorage.setItem(
-                '@AgoraTem:access_token',
+        .then(async (tokenRefreshResponse) => {
+            await AsyncStorage.setItem(
+                'access_token',
                 tokenRefreshResponse.data.access_token
             );
             failedRequest.response.config.headers.Authorization = `Bearer ${tokenRefreshResponse.data.access_token}`;
             return Promise.resolve();
         })
-        .catch(() => {
-            localStorage.removeItem('@AgoraTem:access_token');
-            localStorage.removeItem('@AgoraTem:user');
-            localStorage.removeItem('@AgoraTem:role');
-            return window.location('/login');
+        .catch(async () => {
+            await AsyncStorage.removeItem('access_token');
         });
 
-createAuthRefreshInterceptor(auth, refreshAuthLogic);
-createAuthRefreshInterceptor(services, refreshAuthLogic);
-createAuthRefreshInterceptor(transactions, refreshAuthLogic);
+const options = {
+    statusCodes: [401, 403], // default: [ 401 ]
+};
+
+createAuthRefreshInterceptor(auth, refreshAuthLogic, options);
+createAuthRefreshInterceptor(services, refreshAuthLogic, options);
+createAuthRefreshInterceptor(transactions, refreshAuthLogic, options);
+createAuthRefreshInterceptor(orders, refreshAuthLogic, options);

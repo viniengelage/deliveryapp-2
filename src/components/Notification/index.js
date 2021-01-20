@@ -4,16 +4,19 @@ import { animated, useSpring } from 'react-spring';
 import {
     Container,
     NotificationSvg,
+    DetailSvg,
     Title,
     ButtonContainer,
     Button,
     Bar,
     Background,
+    Description,
 } from './styles';
 
 const Notification = ({
     type,
     text,
+    description,
     buttonText,
     buttonAction,
     withBackground,
@@ -31,16 +34,17 @@ const Notification = ({
                     <AnimatedContainer push style={pushProps}>
                         <Title push>{text}</Title>
                         <ButtonContainer push>
-                            {buttonText.map((button, index) => (
-                                <Button
-                                    push
-                                    notification
-                                    onPress={buttonAction[index]}
-                                    key={buttonText[index]}
-                                >
-                                    {buttonText[index]}
-                                </Button>
-                            ))}
+                            {buttonText &&
+                                buttonText.map((button, index) => (
+                                    <Button
+                                        push
+                                        notification
+                                        onPress={buttonAction[index]}
+                                        key={buttonText[index]}
+                                    >
+                                        {buttonText[index]}
+                                    </Button>
+                                ))}
                         </ButtonContainer>
                         <NotificationSvg />
                     </AnimatedContainer>
@@ -52,16 +56,38 @@ const Notification = ({
                     <Bar />
                     <Title running>{text}</Title>
                     <ButtonContainer>
-                        {buttonText.map((button, index) => (
-                            <Button
-                                notification
-                                onPress={buttonAction[index]}
-                                key={buttonText[index]}
-                            >
-                                {buttonText[index]}
-                            </Button>
-                        ))}
+                        {buttonText &&
+                            buttonText.map((button, index) => (
+                                <Button
+                                    notification
+                                    onPress={buttonAction[index]}
+                                    key={buttonText[index]}
+                                >
+                                    {buttonText[index]}
+                                </Button>
+                            ))}
                     </ButtonContainer>
+                </AnimatedContainer>
+            )}
+
+            {type === 'extract' && (
+                <AnimatedContainer extract style={runningProps}>
+                    <Bar />
+                    <Title extract>{text}</Title>
+                    <Description>{description}</Description>
+                    <ButtonContainer>
+                        {buttonText &&
+                            buttonText.map((button, index) => (
+                                <Button
+                                    notification
+                                    onPress={buttonAction[index]}
+                                    key={buttonText[index]}
+                                >
+                                    {buttonText[index]}
+                                </Button>
+                            ))}
+                    </ButtonContainer>
+                    <DetailSvg width={70} />
                 </AnimatedContainer>
             )}
         </>

@@ -8,13 +8,21 @@ const NotificationProvider = ({ children }) => {
     const [notification, setNotification] = useState({});
 
     const createNotification = useCallback(
-        ({ type, text, buttonText, buttonAction, withBackground }) => {
+        ({
+            type,
+            text,
+            buttonText,
+            buttonAction,
+            withBackground,
+            description,
+        }) => {
             const infos = {
                 type,
                 text,
                 buttonText,
                 buttonAction,
                 withBackground,
+                description,
             };
 
             setNotification(infos);
@@ -40,6 +48,7 @@ const NotificationProvider = ({ children }) => {
                 buttonText={notification.buttonText}
                 buttonAction={notification.buttonAction}
                 withBackground={notification.withBackground}
+                description={notification.description}
             />
         </NoticationContext.Provider>
     );

@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components/native';
 import ButtonComponent from 'components/Button';
 import NotificationImg from 'assets/notification.svg';
 import RunningImg from 'assets/running.svg';
+import DetailImg from 'assets/next.svg';
 
 export const Background = styled.View`
     background: rgba(63, 61, 86, 0.5);
@@ -35,13 +36,25 @@ export const Container = styled.View`
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             bottom: 0;
-            height: 140px;
+            height: 160px;
+            width: 320px;
         `}
 
     ${(props) =>
         props.push &&
         css`
             top: 40%;
+        `}
+        ${(props) =>
+        props.extract &&
+        css`
+            border: none;
+            border-radius: 0;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            bottom: 0;
+            height: 170px;
+            width: 320px;
         `}
 `;
 
@@ -84,6 +97,25 @@ export const Title = styled.Text`
         css`
             width: 70%;
         `}
+
+        ${(props) =>
+        props.extract &&
+        css`
+            margin-top: 20px;
+            margin-left: 20px;
+            margin-bottom: 5px;
+        `}
+`;
+
+export const Description = styled.Text`
+    font-size: 14px;
+    font-family: ${(props) => props.theme.text.medium};
+    color: ${(props) => props.theme.colors.primary};
+    text-align: left;
+    text-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+    margin-left: 20px;
+    width: 60%;
+    margin-bottom: 5px;
 `;
 export const NotificationSvg = styled(NotificationImg)`
     position: absolute;
@@ -93,5 +125,10 @@ export const NotificationSvg = styled(NotificationImg)`
 export const RunningSvg = styled(RunningImg)`
     position: absolute;
     bottom: 0;
+    right: 2px;
+`;
+export const DetailSvg = styled(DetailImg)`
+    position: absolute;
+    bottom: -19px;
     right: 2px;
 `;

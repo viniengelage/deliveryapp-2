@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import { useTheme } from 'styled-components';
-import Icon from 'react-native-ionicons';
-import Spinner from 'react-native-spinkit';
+import { useNavigation } from '@react-navigation/native';
+import { useTransition, animated } from 'react-spring';
 
-import { useAuth } from 'hooks/auth';
+import Icon from 'react-native-ionicons';
 
 import Map from 'components/Map';
 import Navigation from 'components/Navigation';
 
-import { useNavigation } from '@react-navigation/native';
+import order from 'utils/order';
+import { useAuth } from 'hooks/auth';
 import { transactions } from 'services/api';
 import { useOrder } from 'hooks/order';
-import order from 'utils/order';
+import { fadeIn } from 'utils/animations';
+import OrderDetail from './OrderDetail';
 import {
     Container,
     Header,
@@ -31,6 +33,7 @@ import {
     WalletContainer,
     WalletValue,
     OrderButton,
+    DetailContainer,
 } from './styles';
 
 const styles = StyleSheet.create({
@@ -40,9 +43,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    detail: {
+        height: '100%',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    container: {
+        flex: 1,
+    },
 });
 
 const Home = () => {
+    const [balance, setBalance] = useState(0);
     const navigation = useNavigation();
     const { user } = useAuth();
     const { colors } = useTheme();
@@ -52,13 +65,22 @@ const Home = () => {
         destination,
         initOrderStatus,
         onRunning,
+        currentOrder,
+        orderState,
     } = useOrder();
 
-    const [balance, setBalance] = useState(0);
+    const AnimatedContainer = animated(View);
+
+    const [visibleDetail, setVisibleDetail] = useState(false);
+    const detailAnimation = useTransition(visibleDetail, null, fadeIn);
 
     const getWallet = useCallback(async () => {
-        const response = await transactions.get('/wallets');
-        setBalance(response.data.data.balance);
+        try {
+            const response = await transactions.get('/wallets');
+            setBalance(response.data.data.balance);
+        } catch (error) {
+            console.log(error.response.data);
+        }
     }, []);
 
     useEffect(() => {
@@ -67,7 +89,7 @@ const Home = () => {
 
     return (
         <>
-            {initOrderStatus ? (
+            {userLocation && initOrderStatus ? (
                 <>
                     <StatusBar
                         barStyle="light-content"
@@ -78,6 +100,28 @@ const Home = () => {
                         origin={userLocation}
                         destination={destination}
                     />
+                    {onRunning && currentOrder && (
+                        <DetailContainer
+                            onPress={() => setVisibleDetail(!visibleDetail)}
+                        >
+                            <Icon name="cart" size={24} color={colors.button} />
+                        </DetailContainer>
+                    )}
+
+                    {detailAnimation.map(
+                        ({ item, key, props }) =>
+                            item && (
+                                <AnimatedContainer
+                                    key={key}
+                                    style={[props, styles.detail]}
+                                >
+                                    <OrderDetail
+                                        order={orderState}
+                                        close={() => setVisibleDetail(false)}
+                                    />
+                                </AnimatedContainer>
+                            )
+                    )}
                 </>
             ) : (
                 <>
@@ -122,15 +166,7 @@ const Home = () => {
                             <Icon name="archive" size={32} />
                         </OrderButton>
                         <MapContainer>
-                            {onRunning ? (
-                                <Spinner
-                                    isVisible
-                                    size={90}
-                                    color={colors.secundary}
-                                    type="Bounce"
-                                    style={styles.spinner}
-                                />
-                            ) : (
+                            {userLocation && (
                                 <Map userLocation={userLocation} />
                             )}
                         </MapContainer>

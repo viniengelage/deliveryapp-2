@@ -20,7 +20,7 @@ export const Container = styled(RectButton)`
         props.notification &&
         css`
             background-color: ${props.theme.colors.secundary};
-            width: 110px;
+            width: 130px;
             height: 40px;
             margin-left: 20px;
         `}

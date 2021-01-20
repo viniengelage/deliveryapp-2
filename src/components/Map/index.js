@@ -1,7 +1,9 @@
-import React, { useRef, useEffect } from 'react';
+import React, { Fragment, useRef } from 'react';
 import { Image } from 'react-native';
 import { useOrder } from 'hooks/order';
 import MapboxGL, { Logger } from '@react-native-mapbox-gl/maps';
+
+import { v4 as uuid } from 'uuid';
 
 import iconCustomer from 'assets/customer.png';
 
@@ -50,9 +52,8 @@ const Map = ({ userLocation }) => {
 
             {locationOrders &&
                 locationOrders.map((singleOrder) => (
-                    <>
+                    <Fragment key={singleOrder.id}>
                         <MapboxGL.MarkerView
-                            key={singleOrder.id}
                             coordinate={[
                                 singleOrder.longitude,
                                 singleOrder.latitude,
@@ -71,7 +72,7 @@ const Map = ({ userLocation }) => {
                                 centerCoordinate.latitude,
                             ]}
                         />
-                    </>
+                    </Fragment>
                 ))}
 
             {locationOrder.latitude && (
