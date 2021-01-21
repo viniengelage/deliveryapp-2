@@ -3,6 +3,9 @@ import { StatusBar, StyleSheet, View } from 'react-native';
 import { useTheme } from 'styled-components';
 import { useNavigation } from '@react-navigation/native';
 import { useTransition, animated } from 'react-spring';
+import dayjs from 'dayjs';
+import br from 'dayjs/locale/pt-br';
+import localeData from 'dayjs/plugin/localeData';
 
 import Icon from 'react-native-ionicons';
 
@@ -14,6 +17,7 @@ import { useAuth } from 'hooks/auth';
 import { transactions } from 'services/api';
 import { useOrder } from 'hooks/order';
 import { fadeIn } from 'utils/animations';
+import { useLocation } from 'hooks/location';
 import OrderDetail from './OrderDetail';
 import {
     Container,
@@ -35,6 +39,9 @@ import {
     OrderButton,
     DetailContainer,
 } from './styles';
+
+dayjs.locale(br);
+dayjs.extend(localeData);
 
 const styles = StyleSheet.create({
     spinner: {
@@ -61,13 +68,16 @@ const Home = () => {
     const { colors } = useTheme();
     const {
         newOrder,
-        userLocation,
         destination,
         initOrderStatus,
         onRunning,
         currentOrder,
         orderState,
     } = useOrder();
+
+    const { getPosition } = useLocation();
+
+    const [userLocation, setUserLocation] = useState({});
 
     const AnimatedContainer = animated(View);
 
@@ -85,6 +95,13 @@ const Home = () => {
 
     useEffect(() => {
         getWallet();
+        getPosition().then((position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({
+                latitude,
+                longitude,
+            });
+        });
     }, []);
 
     return (
@@ -148,7 +165,11 @@ const Home = () => {
                                 <WalletValue>{balance || 0}</WalletValue>
                             </WalletContainer>
                             <DateContainer>
-                                <Date>17 de janeiro de 2021</Date>
+                                <Date>
+                                    {dayjs().format('DD')} de{' '}
+                                    {dayjs().format('MMMM')} de{' '}
+                                    {dayjs().format('YYYY')}
+                                </Date>
                                 <ChartContainer>
                                     <Icon
                                         name="cellular"

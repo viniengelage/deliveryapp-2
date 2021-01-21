@@ -6,14 +6,13 @@ import React, {
     useEffect,
 } from 'react';
 
-import Geolocation from 'react-native-geolocation-service';
 // import useInterval from 'use-interval';
-import { PermissionsAndroid } from 'react-native';
 import { getCenter, getDistance } from 'geolib';
 import { orders, services } from 'services/api';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useNotification } from './notification';
 import { useLoading } from './loading';
+import { useLocation } from './location';
 
 const OrderContext = createContext({});
 
@@ -28,7 +27,9 @@ const OrderProvider = ({ children }) => {
     const { createNotification, removeNotification } = useNotification();
     const { setLoading } = useLoading();
 
-    const [userLocation, setUserLocation] = useState({});
+    const { userLocation: initialLocation } = useLocation();
+
+    const [userLocation, setUserLocation] = useState(initialLocation);
     const [destination, setDestination] = useState({});
 
     const [onRunning, setOnRunning] = useState(false);
@@ -51,13 +52,7 @@ const OrderProvider = ({ children }) => {
 
     const [zoom, setZoom] = useState(18);
 
-    const getPosition = useCallback(
-        (options) =>
-            new Promise((resolve, reject) => {
-                Geolocation.getCurrentPosition(resolve, reject, options);
-            }),
-        []
-    );
+    const { getPosition } = useLocation();
 
     // useInterval(
     //     async () => {
@@ -73,63 +68,6 @@ const OrderProvider = ({ children }) => {
     //     onRunning ? 5000 : null,
     //     true
     // );
-    const requestGpsPermission = useCallback(async () => {
-        try {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                {
-                    title: 'Permita que possamos usar a localização',
-                    buttonNegative: 'Não',
-                    buttonPositive: 'OK',
-                }
-            );
-
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                removeNotification();
-            } else {
-                createNotification({
-                    withBackground: true,
-                    type: 'push',
-                    text:
-                        'Sem sua localização, não podemos te mostrar o melhor',
-                    buttonText: ['Denovo!'],
-                    buttonAction: [() => requestGpsPermission()],
-                });
-            }
-        } catch (error) {
-            createNotification({
-                withBackground: true,
-                type: 'push',
-                text:
-                    'Aconteceu um erro e não podemos continuar, tente novamente mais tarde.',
-                buttonText: ['Concluido'],
-                buttonAction: [() => removeNotification()],
-            });
-        }
-    }, []);
-
-    const checkPermission = useCallback(async () => {
-        const granted = await PermissionsAndroid.check(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        if (!granted) {
-            createNotification({
-                withBackground: true,
-                type: 'push',
-                text: 'Precisamos de sua permissão para acessar a localização',
-                buttonText: ['Tudo bem!'],
-                buttonAction: [() => requestGpsPermission()],
-            });
-        } else {
-            getPosition().then((position) => {
-                const { latitude, longitude } = position.coords;
-                setUserLocation({
-                    latitude,
-                    longitude,
-                });
-            });
-        }
-    }, []);
 
     const getStorageData = useCallback(async () => {
         const orderStatusStorage = await AsyncStorage.getItem('order_status');
@@ -144,8 +82,8 @@ const OrderProvider = ({ children }) => {
             orderStorage.orders.map((singleOrder) =>
                 customerAddresses.push({
                     id: singleOrder.id,
-                    latitude: Number(singleOrder.customer_address.latitude),
-                    longitude: Number(singleOrder.customer_address.longitude),
+                    latitude: singleOrder.customer_address.latitude,
+                    longitude: singleOrder.customer_address.longitude,
                 })
             );
             setHasManyOrders(true);
@@ -180,7 +118,6 @@ const OrderProvider = ({ children }) => {
 
     useEffect(() => {
         // getStorageData();
-        checkPermission();
     }, []);
 
     const newOrder = useCallback(async (order) => {
@@ -192,8 +129,8 @@ const OrderProvider = ({ children }) => {
             order.orders.map((singleOrder) =>
                 customerAddresses.push({
                     id: singleOrder.id,
-                    latitude: Number(singleOrder.customer_address.latitude),
-                    longitude: Number(singleOrder.customer_address.longitude),
+                    latitude: singleOrder.customer_address.latitude,
+                    longitude: singleOrder.customer_address.longitude,
                 })
             );
             setHasManyOrders(true);
@@ -206,8 +143,8 @@ const OrderProvider = ({ children }) => {
         }
 
         const customerLocation = {
-            latitude: Number(order.orders[0].customer_address.latitude),
-            longitude: Number(order.orders[0].customer_address.longitude),
+            latitude: order.orders[0].customer_address.latitude,
+            longitude: order.orders[0].customer_address.longitude,
         };
 
         const {
@@ -264,8 +201,8 @@ const OrderProvider = ({ children }) => {
         removeNotification();
         setZoom(18);
         setCenterCoordinate({
-            latitude: Number(userLocation.latitude),
-            longitude: Number(userLocation.longitude),
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
         });
         setLocationOrder([]);
     }, []);
@@ -311,7 +248,13 @@ const OrderProvider = ({ children }) => {
             hasManyOrdersParam,
             orderIdParam
         ) => {
+            setLoading(true);
+
             removeNotification();
+
+            await orders.put(
+                `orders/${order.orders[currentOrderIndexParam].id}/finalize`
+            );
 
             setInitOrderStatus(false);
 
@@ -319,12 +262,9 @@ const OrderProvider = ({ children }) => {
                 currentOrderIndexParam !== orderLengthParam - 1 &&
                 hasManyOrdersParam
             ) {
+                setLoading(false);
                 const address =
                     order.orders[currentOrderIndexParam + 1].customer_address;
-                console.log(address);
-                await orders.put(
-                    `orders/${order.orders[currentOrderIndex].id}/finalize`
-                );
                 createNotification({
                     type: 'extract',
                     text: 'Estes são os detalhes da sua próxima entrega:',
@@ -361,8 +301,12 @@ const OrderProvider = ({ children }) => {
 
     const finishOrder = useCallback(async (order, orderIdParam) => {
         await services.put(`deliveries/${orderIdParam}/finalize`);
+
         setInitOrderStatus(false);
         setOnRunning(false);
+
+        setLoading(false);
+
         setCurrentOrder({});
         setCurrentOrderIndex(0);
         setDestination({});
@@ -428,8 +372,8 @@ const OrderProvider = ({ children }) => {
                         longitude: currentOrderParam.customer_address.longitude,
                     }
                 );
-                if (distance < 100) {
-                    if (!onLocal) {
+                if (!onLocal) {
+                    if (distance < 100) {
                         createNotification({
                             type: 'running',
                             text:
@@ -437,8 +381,8 @@ const OrderProvider = ({ children }) => {
                             buttonText: ['Entendido'],
                             buttonAction: [() => removeNotification()],
                         });
+                        setOnLocal(true);
                     }
-                    setOnLocal(true);
                 }
             }
         },

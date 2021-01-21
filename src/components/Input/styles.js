@@ -37,6 +37,6 @@ export const Icon = styled(IoIcons)`
 export const ErrorText = styled.Text`
     margin-top: 0;
     color: #c53030;
-    font-family: 'RobotoSlab-Medium';
+    font-family: ${(props) => props.theme.text.medium};
     margin-left: 3px;
 `;

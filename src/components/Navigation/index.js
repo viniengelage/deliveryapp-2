@@ -11,10 +11,13 @@ const Navigation = ({ origin, destination }) => {
         <>
             {origin && destination && (
                 <MapboxNavigation
-                    origin={[Number(origin.longitude), Number(origin.latitude)]}
+                    origin={[
+                        parseFloat(origin.longitude),
+                        parseFloat(origin.latitude),
+                    ]}
                     destination={[
-                        Number(destination.longitude),
-                        Number(destination.latitude),
+                        parseFloat(destination.longitude),
+                        parseFloat(destination.latitude),
                     ]}
                     shouldSimulateRoute
                     onProgressChange={(event) => {

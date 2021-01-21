@@ -23,4 +23,6 @@ target 'AGTDeliveryApp2' do
   #  end
   pod 'RNSVG', :path => '../node_modules/react-native-svg'
 
+  pod 'RNCPicker', :path => '../node_modules/@react-native-picker/picker'
+
 end

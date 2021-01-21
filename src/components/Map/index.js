@@ -3,8 +3,6 @@ import { Image } from 'react-native';
 import { useOrder } from 'hooks/order';
 import MapboxGL, { Logger } from '@react-native-mapbox-gl/maps';
 
-import { v4 as uuid } from 'uuid';
-
 import iconCustomer from 'assets/customer.png';
 
 MapboxGL.setAccessToken(
@@ -26,6 +24,10 @@ Logger.setLogCallback((log) => {
 const Map = ({ userLocation }) => {
     const mapRef = useRef(null);
 
+    function isEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+
     const {
         locationOrders,
         locationOrder,
@@ -40,12 +42,12 @@ const Map = ({ userLocation }) => {
             compassEnabled
             ref={mapRef}
         >
-            {userLocation && (
+            {!isEmpty(userLocation) && (
                 <MapboxGL.Camera
                     zoomLevel={zoom}
                     centerCoordinate={[
-                        userLocation.longitude,
-                        userLocation.latitude,
+                        Number(userLocation.longitude),
+                        Number(userLocation.latitude),
                     ]}
                 />
             )}
@@ -55,8 +57,8 @@ const Map = ({ userLocation }) => {
                     <Fragment key={singleOrder.id}>
                         <MapboxGL.MarkerView
                             coordinate={[
-                                singleOrder.longitude,
-                                singleOrder.latitude,
+                                Number(singleOrder.longitude),
+                                Number(singleOrder.latitude),
                             ]}
                         >
                             <Image
@@ -68,19 +70,19 @@ const Map = ({ userLocation }) => {
                         <MapboxGL.Camera
                             zoomLevel={zoom}
                             centerCoordinate={[
-                                centerCoordinate.longitude,
-                                centerCoordinate.latitude,
+                                Number(centerCoordinate.longitude),
+                                Number(centerCoordinate.latitude),
                             ]}
                         />
                     </Fragment>
                 ))}
 
-            {locationOrder.latitude && (
+            {!isEmpty(locationOrder) && (
                 <>
                     <MapboxGL.MarkerView
                         coordinate={[
-                            locationOrder.longitude,
-                            locationOrder.latitude,
+                            Number(locationOrder.longitude),
+                            Number(locationOrder.latitude),
                         ]}
                     >
                         <Image
@@ -92,18 +94,24 @@ const Map = ({ userLocation }) => {
                     <MapboxGL.Camera
                         zoomLevel={zoom}
                         centerCoordinate={[
-                            centerCoordinate.longitude,
-                            centerCoordinate.latitude,
+                            Number(centerCoordinate.longitude),
+                            Number(centerCoordinate.latitude),
                         ]}
                     />
                 </>
             )}
-            {locationOrder.latitude && (
+            {!isEmpty(locationOrder) && (
                 <MapboxGL.Camera
                     zoomLevel={zoom}
                     centerCoordinate={
-                        ([userLocation.longitude, userLocation.latitude],
-                        [locationOrder.longitude, locationOrder.latitude])
+                        ([
+                            Number(userLocation.longitude),
+                            Number(userLocation.latitude),
+                        ],
+                        [
+                            Number(locationOrder.longitude),
+                            Number(locationOrder.latitude),
+                        ])
                     }
                 />
             )}

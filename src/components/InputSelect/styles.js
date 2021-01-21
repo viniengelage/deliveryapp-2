@@ -42,7 +42,7 @@ export const Icon = styled(IoIcons)`
 export const TextInput = styled.TextInput`
     flex: 1;
     font-size: 16px;
-    font-family: ${(props) => props.theme.text.bold};
+    font-family: ${(props) => props.theme.text.medium};
 `;
 
 export const ErrorText = styled.Text`
