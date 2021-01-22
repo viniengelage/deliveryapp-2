@@ -79,7 +79,8 @@ const OrderDetail = ({ order, close }) => {
                                     order,
                                     currentOrderIndex,
                                     orderLength,
-                                    hasManyOrders
+                                    hasManyOrders,
+                                    order.id
                                 );
                                 close();
                             }}

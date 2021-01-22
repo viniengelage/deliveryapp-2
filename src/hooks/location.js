@@ -7,11 +7,13 @@ import React, {
 } from 'react';
 import { PermissionsAndroid } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
+import { useNotification } from './notification';
 
 const Location = createContext({});
 
 const LocationProvider = ({ children }) => {
     const [userLocation, setUserLocation] = useState({});
+    const { createNotification, removeNotification } = useNotification();
 
     const getPosition = useCallback(
         (options) =>

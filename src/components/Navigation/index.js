@@ -7,6 +7,8 @@ const Navigation = ({ origin, destination }) => {
     const { registerLocation, orderStatus, currentOrder, orderId } = useOrder();
     const { createNotification, removeNotification } = useNotification();
 
+    console.log(orderId);
+
     return (
         <>
             {origin && destination && (

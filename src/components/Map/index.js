@@ -46,43 +46,18 @@ const Map = ({ userLocation }) => {
                 <MapboxGL.Camera
                     zoomLevel={zoom}
                     centerCoordinate={[
-                        Number(userLocation.longitude),
-                        Number(userLocation.latitude),
+                        userLocation.longitude,
+                        userLocation.latitude,
                     ]}
                 />
             )}
-
-            {locationOrders &&
-                locationOrders.map((singleOrder) => (
-                    <Fragment key={singleOrder.id}>
-                        <MapboxGL.MarkerView
-                            coordinate={[
-                                Number(singleOrder.longitude),
-                                Number(singleOrder.latitude),
-                            ]}
-                        >
-                            <Image
-                                source={iconCustomer}
-                                style={{ width: 32, height: 32 }}
-                                resizeMode="contain"
-                            />
-                        </MapboxGL.MarkerView>
-                        <MapboxGL.Camera
-                            zoomLevel={zoom}
-                            centerCoordinate={[
-                                Number(centerCoordinate.longitude),
-                                Number(centerCoordinate.latitude),
-                            ]}
-                        />
-                    </Fragment>
-                ))}
 
             {!isEmpty(locationOrder) && (
                 <>
                     <MapboxGL.MarkerView
                         coordinate={[
-                            Number(locationOrder.longitude),
-                            Number(locationOrder.latitude),
+                            locationOrder.longitude,
+                            locationOrder.latitude,
                         ]}
                     >
                         <Image
@@ -94,8 +69,8 @@ const Map = ({ userLocation }) => {
                     <MapboxGL.Camera
                         zoomLevel={zoom}
                         centerCoordinate={[
-                            Number(centerCoordinate.longitude),
-                            Number(centerCoordinate.latitude),
+                            centerCoordinate.longitude,
+                            centerCoordinate.latitude,
                         ]}
                     />
                 </>

@@ -117,10 +117,12 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        // getStorageData();
+        getStorageData();
     }, []);
 
     const newOrder = useCallback(async (order) => {
+        console.log(order);
+        console.log(order.orders[0].latitude);
         setOrderLength(order.orders.length);
         setOrderState(order);
 
@@ -129,13 +131,14 @@ const OrderProvider = ({ children }) => {
             order.orders.map((singleOrder) =>
                 customerAddresses.push({
                     id: singleOrder.id,
-                    latitude: singleOrder.customer_address.latitude,
-                    longitude: singleOrder.customer_address.longitude,
+                    latitude: parseFloat(singleOrder.customer_address.latitude),
+                    longitude: parseFloat(
+                        singleOrder.customer_address.longitude
+                    ),
                 })
             );
             setHasManyOrders(true);
             setLocationOrders(customerAddresses);
-            setCenterCoordinate(getCenter(customerAddresses));
         }
 
         if (order.orders.length > 1) {
@@ -182,7 +185,9 @@ const OrderProvider = ({ children }) => {
         setOrderId(orderID);
         removeNotification();
         setCurrentOrder(order);
-        await services.put(`deliveries/${orderID}/accept`);
+
+        // await services.put(`deliveries/${orderID}/accept`);
+
         setDestination({
             latitude: order.seller.address.latitude,
             longitude: order.seller.address.longitude,
@@ -197,7 +202,7 @@ const OrderProvider = ({ children }) => {
     }, []);
 
     const declineOrder = useCallback(async (order, orderID) => {
-        await services.put(`deliveries/${orderID}/decline`);
+        // await services.put(`deliveries/${orderID}/decline`);
         removeNotification();
         setZoom(18);
         setCenterCoordinate({
@@ -221,7 +226,9 @@ const OrderProvider = ({ children }) => {
         setLoading(true);
         setInitOrderStatus(false);
 
-        await services.put(`deliveries/${orderID}/start`);
+        console.log(orderID);
+
+        // await services.put(`deliveries/${orderID}/start`);
 
         const {
             coords: { latitude, longitude },
@@ -248,13 +255,21 @@ const OrderProvider = ({ children }) => {
             hasManyOrdersParam,
             orderIdParam
         ) => {
-            setLoading(true);
-
             removeNotification();
 
-            await orders.put(
-                `orders/${order.orders[currentOrderIndexParam].id}/finalize`
-            );
+            setLoading(true);
+
+            console.log('iniciou a api');
+
+            // await orders.put(
+            //     `orders/${order.orders[currentOrderIndexParam].id}/delivery`
+            // );
+
+            // await orders.put(
+            //     `orders/${order.orders[currentOrderIndexParam].id}/finalize`
+            // );
+
+            console.log('passou pela api');
 
             setInitOrderStatus(false);
 
@@ -270,7 +285,9 @@ const OrderProvider = ({ children }) => {
                     text: 'Estes são os detalhes da sua próxima entrega:',
                     description: `${address.street}, ${address.number} - ${address.district}`,
                     buttonText: ['Vamos lá'],
-                    buttonAction: [() => nextOrder(order)],
+                    buttonAction: [
+                        () => nextOrder(order, currentOrderIndexParam),
+                    ],
                 });
             } else {
                 finishOrder(order, orderIdParam);
@@ -279,28 +296,33 @@ const OrderProvider = ({ children }) => {
         []
     );
 
-    const nextOrder = useCallback(async (order) => {
+    const nextOrder = useCallback(async (order, currentOrderIndexParam) => {
         removeNotification();
         setOnLocal(false);
         setOrderStatus(status.onDelivery);
         setDestination({
             latitude:
-                order.orders[currentOrderIndex + 1].customer_address.latitude,
+                order.orders[currentOrderIndexParam + 1].customer_address
+                    .latitude,
             longitude:
-                order.orders[currentOrderIndex + 1].customer_address.longitude,
+                order.orders[currentOrderIndexParam + 1].customer_address
+                    .longitude,
         });
-        setCurrentOrder(order.orders[currentOrderIndex + 1]);
-        setCurrentOrderIndex(currentOrderIndex + 1);
+        setCurrentOrder(order.orders[currentOrderIndexParam + 1]);
+        setCurrentOrderIndex(currentOrderIndexParam + 1);
         setInitOrderStatus(true);
         await AsyncStorage.setItem('order_status', 'onNextOrder');
         await AsyncStorage.setItem(
             'current_order',
-            JSON.stringify(order.orders[currentOrderIndex + 1])
+            JSON.stringify(order.orders[currentOrderIndexParam + 1])
         );
     }, []);
 
     const finishOrder = useCallback(async (order, orderIdParam) => {
-        await services.put(`deliveries/${orderIdParam}/finalize`);
+        console.log('to finalize');
+        console.log(orderIdParam);
+        // await services.put(`deliveries/${orderIdParam}/finalize`);
+        console.log('passou pela api');
 
         setInitOrderStatus(false);
         setOnRunning(false);
