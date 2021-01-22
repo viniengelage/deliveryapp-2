@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import MapboxNavigation from '@homee/react-native-mapbox-navigation';
 import { useOrder } from 'hooks/order';
 import { useNotification } from 'hooks/notification';
@@ -6,8 +6,6 @@ import { useNotification } from 'hooks/notification';
 const Navigation = ({ origin, destination }) => {
     const { registerLocation, orderStatus, currentOrder, orderId } = useOrder();
     const { createNotification, removeNotification } = useNotification();
-
-    console.log(orderId);
 
     return (
         <>
@@ -21,7 +19,7 @@ const Navigation = ({ origin, destination }) => {
                         parseFloat(destination.longitude),
                         parseFloat(destination.latitude),
                     ]}
-                    shouldSimulateRoute
+                    shouldSimulateRoute={false}
                     onProgressChange={(event) => {
                         const { latitude, longitude } = event.nativeEvent;
                         registerLocation(

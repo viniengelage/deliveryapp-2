@@ -4,6 +4,7 @@ import { useOrder } from 'hooks/order';
 import MapboxGL, { Logger } from '@react-native-mapbox-gl/maps';
 
 import iconCustomer from 'assets/customer.png';
+import { useEffect } from 'react/cjs/react.development';
 
 MapboxGL.setAccessToken(
     'sk.eyJ1IjoibWFrZXBybyIsImEiOiJja2sycTVhbHUxM3doMm50MXY2cGMyNm1vIn0.5dAXsTBgBJrFsuXWNtjGvg'
@@ -89,6 +90,34 @@ const Map = ({ userLocation }) => {
                         ])
                     }
                 />
+            )}
+
+            {locationOrders.length !== 0 && (
+                <>
+                    {locationOrders.map((singleOrder) => (
+                        <Fragment key={singleOrder.id}>
+                            <MapboxGL.MarkerView
+                                coordinate={[
+                                    locationOrder.longitude,
+                                    locationOrder.latitude,
+                                ]}
+                            >
+                                <Image
+                                    source={iconCustomer}
+                                    style={{ width: 32, height: 32 }}
+                                    resizeMode="contain"
+                                />
+                            </MapboxGL.MarkerView>
+                            <MapboxGL.Camera
+                                zoomLevel={zoom}
+                                centerCoordinate={[
+                                    centerCoordinate.longitude,
+                                    centerCoordinate.latitude,
+                                ]}
+                            />
+                        </Fragment>
+                    ))}
+                </>
             )}
             <MapboxGL.UserLocation showsUserHeadingIndicator />
         </MapboxGL.MapView>

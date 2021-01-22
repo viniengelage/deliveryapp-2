@@ -42,9 +42,9 @@ export const FinalizeContainer = styled.View`
     margin: 10px 0;
 `;
 export const FinalizeButton = styled(RectButton)`
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
     background-color: ${(props) => props.theme.colors.secundary};
 
     justify-content: center;

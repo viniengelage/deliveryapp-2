@@ -41,14 +41,13 @@ const SocketProvider = ({ token, children }) => {
     const getConnectionStatus = async () => {
         const status = await AsyncStorage.getItem('statusSocket');
 
-        if (status === 'connected') {
-            if (!socket.connected) {
-                socket.on('connected', () => {
-                    setIsEnabled(true);
-                    console.log(socket.connected);
-                });
-            }
+        if (status === 'connected' && !socket.connected) {
+            socket.on('connected', () => {
+                setIsEnabled(true);
+            });
         }
+
+        if (socket.connected) return setIsEnabled(true);
     };
 
     useEffect(() => {

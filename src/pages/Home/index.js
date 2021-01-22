@@ -72,7 +72,7 @@ const Home = () => {
         initOrderStatus,
         onRunning,
         currentOrder,
-        orderState,
+        deliveryState,
     } = useOrder();
 
     const { getPosition } = useLocation();
@@ -133,7 +133,7 @@ const Home = () => {
                                     style={[props, styles.detail]}
                                 >
                                     <OrderDetail
-                                        order={orderState}
+                                        order={deliveryState}
                                         close={() => setVisibleDetail(false)}
                                     />
                                 </AnimatedContainer>
