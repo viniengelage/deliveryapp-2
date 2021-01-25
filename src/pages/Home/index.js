@@ -69,10 +69,10 @@ const Home = () => {
     const {
         newOrder,
         destination,
-        initOrderStatus,
         onRunning,
         currentOrder,
         deliveryState,
+        onNavigation,
     } = useOrder();
 
     const { getPosition } = useLocation();
@@ -106,7 +106,7 @@ const Home = () => {
 
     return (
         <>
-            {userLocation && initOrderStatus ? (
+            {userLocation && onNavigation ? (
                 <>
                     <StatusBar
                         barStyle="light-content"
@@ -181,11 +181,11 @@ const Home = () => {
                             </DateContainer>
                             <Bar />
                         </HeaderContainer>
-                        {/* <OrderButton
+                        <OrderButton
                             onPress={() => newOrder(order, userLocation)}
                         >
                             <Icon name="archive" size={32} />
-                        </OrderButton> */}
+                        </OrderButton>
                         <MapContainer>
                             {userLocation && (
                                 <Map userLocation={userLocation} />

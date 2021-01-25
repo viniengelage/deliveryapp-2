@@ -25,6 +25,7 @@ module.exports = {
       'prettier'
     ],
     rules: {
+        'no-restricted-globals': 'off',
         'no-use-before-define': 'off',
         camelcase: 'off',
         'func-names': 'off',

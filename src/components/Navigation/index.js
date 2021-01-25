@@ -1,15 +1,25 @@
-import React from 'react';
-import MapboxNavigation from '@homee/react-native-mapbox-navigation';
+import React, { useEffect } from 'react';
 import { useOrder } from 'hooks/order';
 import { useNotification } from 'hooks/notification';
+import MapboxNavigation from './NavigationView';
 
 const Navigation = ({ origin, destination }) => {
-    const { registerLocation, orderStatus, currentOrder, orderId } = useOrder();
+    const {
+        registerLocation,
+        orderStatus,
+        currentOrder,
+        deliveryId,
+        onNavigation,
+    } = useOrder();
     const { createNotification, removeNotification } = useNotification();
+
+    useEffect(() => {
+        console.log(origin, destination);
+    }, []);
 
     return (
         <>
-            {origin && destination && (
+            {onNavigation && origin && destination && (
                 <MapboxNavigation
                     origin={[
                         parseFloat(origin.longitude),
@@ -19,7 +29,7 @@ const Navigation = ({ origin, destination }) => {
                         parseFloat(destination.longitude),
                         parseFloat(destination.latitude),
                     ]}
-                    shouldSimulateRoute={false}
+                    shouldSimulateRoute
                     onProgressChange={(event) => {
                         const { latitude, longitude } = event.nativeEvent;
                         registerLocation(
@@ -27,11 +37,10 @@ const Navigation = ({ origin, destination }) => {
                             longitude,
                             orderStatus,
                             currentOrder,
-                            orderId
+                            deliveryId
                         );
                     }}
                     onError={() => {
-                        // const { message } = event.nativeEvent;
                         createNotification({
                             type: 'push',
                             text: 'Algum erro aconteceu.',
@@ -39,7 +48,6 @@ const Navigation = ({ origin, destination }) => {
                             buttonAction: [() => removeNotification()],
                         });
                     }}
-                    style={{ flex: 1, zIndex: 1 }}
                 />
             )}
         </>

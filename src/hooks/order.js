@@ -40,14 +40,14 @@ const OrderProvider = ({ children }) => {
     const [hasManyOrders, setHasManyOrders] = useState(false);
 
     const [deliveryState, setDeliveryState] = useState({});
-    const [orderId, setOrderId] = useState(0);
+    const [deliveryId, setDeliveryId] = useState(0);
 
     const [orderLength, setOrderLength] = useState(0);
     const [currentOrder, setCurrentOrder] = useState({});
     const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
     const [centerCoordinate, setCenterCoordinate] = useState([]);
 
-    const [initOrderStatus, setInitOrderStatus] = useState(false);
+    const [onNavigation, setOnNavigation] = useState(false);
     const [orderStatus, setOrderStatus] = useState(status.notStarted);
 
     const [zoom, setZoom] = useState(18);
@@ -71,7 +71,7 @@ const OrderProvider = ({ children }) => {
 
     const getStorageData = useCallback(async () => {
         const deliveryStatusStorage = await AsyncStorage.getItem(
-            'order_status'
+            'delivery_status'
         );
 
         const deliveryStorage = JSON.parse(
@@ -85,20 +85,10 @@ const OrderProvider = ({ children }) => {
         if (deliveryStorage) {
             setOrderLength(deliveryStorage.orders.length);
             setDeliveryState(deliveryStorage);
-            setOrderId(deliveryStorage.id);
+            setDeliveryId(deliveryStorage.id);
 
             if (deliveryStorage.orders.length > 1) {
-                const customerAddresses = [];
-                deliveryStorage.orders.map((singleOrder) =>
-                    customerAddresses.push({
-                        id: singleOrder.id,
-                        latitude: singleOrder.customer_address.latitude,
-                        longitude: singleOrder.customer_address.longitude,
-                    })
-                );
                 setHasManyOrders(true);
-                setLocationOrders(customerAddresses);
-                setCenterCoordinate(getCenter(customerAddresses));
             }
 
             setDeliveryState(deliveryStorage);
@@ -108,23 +98,37 @@ const OrderProvider = ({ children }) => {
             }
 
             if (deliveryStatusStorage === 'started') {
-                setDestination({
-                    latitude: deliveryStatusStorage.orders[0].latitude,
-                    longitude: deliveryStatusStorage.orders[0].longitude,
-                });
+                setDeliveryId(deliveryStorage.id);
+                setCurrentOrder(orderCurrentStorage);
+
+                const sellerAddress = {
+                    latitude: deliveryStorage.orders[0].seller.address.latitude,
+                    longitude:
+                        deliveryStorage.orders[0].seller.address.longitude,
+                };
+
+                initOrder(sellerAddress);
             }
 
-            if (deliveryStatusStorage === 'onRunning') {
+            if (deliveryStatusStorage === 'onDelivery') {
+                setOrderStatus(status.onDelivery);
+
+                setDeliveryId(deliveryStorage.id);
+                setCurrentOrder(orderCurrentStorage);
+
                 setDestination({
-                    latitude: orderCurrentStorage.latitude,
-                    longitude: orderCurrentStorage.longitude,
+                    latitude: orderCurrentStorage.customer_address.latitude,
+                    longitude: orderCurrentStorage.customer_address.longitude,
                 });
+
+                // setOnRunning(true);
+                // setOnNavigation(true);
             }
         }
     }, []);
 
     useEffect(() => {
-        getStorageData();
+        console.log('init');
     }, []);
 
     const newOrder = useCallback(async (delivery) => {
@@ -135,6 +139,10 @@ const OrderProvider = ({ children }) => {
             latitude: delivery.orders[0].customer_address.latitude,
             longitude: delivery.orders[0].customer_address.longitude,
         };
+
+        const {
+            coords: { latitude, longitude },
+        } = await getPosition();
 
         if (delivery.orders.length > 1) {
             const customerAddresses = [];
@@ -147,19 +155,22 @@ const OrderProvider = ({ children }) => {
             );
             setHasManyOrders(true);
             setLocationOrders(customerAddresses);
+
+            const center = [];
+
+            customerAddresses.map((oneAddress) => center.push(oneAddress));
+            center.push({ latitude, longitude });
+
+            setZoom(12);
+            setCenterCoordinate(getCenter(center));
         } else {
             setLocationOrder(customerLocation);
+
+            setZoom(1);
+            setCenterCoordinate(
+                getCenter([{ latitude, longitude }, customerLocation])
+            );
         }
-
-        const {
-            coords: { latitude, longitude },
-        } = await getPosition();
-
-        setZoom(12);
-        setCenterCoordinate(
-            getCenter([{ latitude, longitude }, customerLocation])
-        );
-
         createNotification({
             type: 'running',
             text: 'Você recebeu um pedido de entrega',
@@ -188,28 +199,40 @@ const OrderProvider = ({ children }) => {
         await AsyncStorage.setItem('delivery', JSON.stringify(delivery));
     }, []);
 
-    const acceptOrder = useCallback(async (order, deliveryId) => {
-        setOrderId(deliveryId);
+    const acceptOrder = useCallback(async (delivery, deliveryIdParam) => {
+        setLocationOrder([]);
+        setLocationOrders([]);
+
         removeNotification();
-        setCurrentOrder(order);
 
-        await services.put(`deliveries/${deliveryId}/accept`);
+        setDeliveryId(deliveryIdParam);
+        setCurrentOrder(delivery);
 
-        setDestination({
-            latitude: order.seller.address.latitude,
-            longitude: order.seller.address.longitude,
-        });
+        const sellerAddress = {
+            latitude: delivery.seller.address.latitude,
+            longitude: delivery.seller.address.longitude,
+        };
+
+        const {
+            coords: { latitude, longitude },
+        } = await getPosition();
+
+        setCenterCoordinate({ latitude, longitude });
+        setZoom(18);
+
+        // await services.put(`deliveries/${deliveryIdParam}/accept`);
+        await AsyncStorage.setItem('delivery_status', 'accepted');
+
         createNotification({
             type: 'running',
             text: 'Podemos começar?',
             buttonText: ['Iniciar'],
-            buttonAction: [() => initOrder(order)],
+            buttonAction: [() => initOrder(delivery, sellerAddress)],
         });
-        await AsyncStorage.setItem('order_status', 'accepted');
     }, []);
 
-    const declineOrder = useCallback(async (order, deliveryId) => {
-        await services.put(`deliveries/${deliveryId}/decline`);
+    const declineOrder = useCallback(async (order, deliveryIdParam) => {
+        // await services.put(`deliveries/${deliveryIdParam}/decline`);
         removeNotification();
         setZoom(18);
         setCenterCoordinate({
@@ -217,42 +240,51 @@ const OrderProvider = ({ children }) => {
             longitude: userLocation.longitude,
         });
         setLocationOrder([]);
+        setLocationOrders([]);
+        await AsyncStorage.removeItem('order_length');
+        await AsyncStorage.removeItem('current_order');
+        await AsyncStorage.removeItem('delivery');
     }, []);
 
-    const initOrder = useCallback(async () => {
+    const initOrder = useCallback(async (sellerAddress) => {
+        setDestination(sellerAddress);
+        await AsyncStorage.setItem('delivery_status', 'started');
         setOrderStatus(status.onReceiving);
         setOnRunning(true);
-        setInitOrderStatus(true);
-        await AsyncStorage.setItem('order_status', 'started');
+        setOnNavigation(true);
         removeNotification();
     }, []);
 
-    const receivedOrder = useCallback(async (orderCurrent, deliveryId) => {
-        setOrderStatus(status.onDelivery);
-        removeNotification();
+    const receivedOrder = useCallback(
+        async (currentOrderParam, deliveryIdParam) => {
+            setOrderStatus(status.onDelivery);
+            removeNotification();
 
-        setLoading(true);
-        setInitOrderStatus(false);
+            setOnNavigation(false);
+            setLoading(true);
 
-        await services.put(`deliveries/${deliveryId}/start`);
-        await AsyncStorage.setItem('order_status', 'onRunning');
+            // await services.put(`deliveries/${deliveryIdParam}/start`);
+            await AsyncStorage.setItem('delivery_status', 'onDelivery');
 
-        const {
-            coords: { latitude, longitude },
-        } = await getPosition();
+            const {
+                coords: { latitude, longitude },
+            } = await getPosition();
 
-        setUserLocation({
-            latitude,
-            longitude,
-        });
+            setUserLocation({
+                latitude,
+                longitude,
+            });
 
-        setDestination({
-            latitude: orderCurrent.customer_address.latitude,
-            longitude: orderCurrent.customer_address.longitude,
-        });
-        setInitOrderStatus(true);
-        setLoading(false);
-    }, []);
+            setDestination({
+                latitude: currentOrderParam.customer_address.latitude,
+                longitude: currentOrderParam.customer_address.longitude,
+            });
+
+            setOnNavigation(true);
+            setLoading(false);
+        },
+        []
+    );
 
     const deliveryOrder = useCallback(
         async (
@@ -266,11 +298,11 @@ const OrderProvider = ({ children }) => {
 
             setLoading(true);
 
-            await orders.put(
-                `orders/${order.orders[currentOrderIndexParam].id}/finalize`
-            );
+            // await orders.put(
+            //     `orders/${order.orders[currentOrderIndexParam].id}/finalize`
+            // );
 
-            setInitOrderStatus(false);
+            setOnNavigation(false);
 
             if (
                 currentOrderIndexParam !== orderLengthParam - 1 &&
@@ -297,8 +329,10 @@ const OrderProvider = ({ children }) => {
 
     const nextOrder = useCallback(async (order, currentOrderIndexParam) => {
         removeNotification();
+
         setOnLocal(false);
         setOrderStatus(status.onDelivery);
+
         setDestination({
             latitude:
                 order.orders[currentOrderIndexParam + 1].customer_address
@@ -309,20 +343,22 @@ const OrderProvider = ({ children }) => {
         });
         setCurrentOrder(order.orders[currentOrderIndexParam + 1]);
         setCurrentOrderIndex(currentOrderIndexParam + 1);
-        setInitOrderStatus(true);
+
+        setOnNavigation(true);
+
         await AsyncStorage.setItem(
             'current_order',
             JSON.stringify(order.orders[currentOrderIndexParam + 1])
         );
     }, []);
 
-    const finishOrder = useCallback(async (order, deliveryId) => {
-        await services.put(`deliveries/${deliveryId}/delivery`);
-        await services.put(`deliveries/${deliveryId}/finalize`);
+    const finishOrder = useCallback(async (order, deliveryIdParam) => {
+        // await services.put(`deliveries/${deliveryIdParam}/delivery`);
+        // await services.put(`deliveries/${deliveryIdParam}/finalize`);
 
         setLoading(false);
 
-        setInitOrderStatus(false);
+        setOnNavigation(false);
         setOnRunning(false);
 
         setCurrentOrder({});
@@ -332,7 +368,7 @@ const OrderProvider = ({ children }) => {
         setLocationOrder({});
         setLocationOrders([]);
 
-        await AsyncStorage.removeItem('order_status');
+        await AsyncStorage.removeItem('delivery_status');
         await AsyncStorage.removeItem('order');
         await AsyncStorage.removeItem('current_order');
 
@@ -361,7 +397,7 @@ const OrderProvider = ({ children }) => {
             longitude,
             statusOrder,
             currentOrderParam,
-            deliveryId
+            deliveryIdParam
         ) => {
             if (statusOrder === status.onReceiving) {
                 const distance = getDistance(
@@ -377,7 +413,11 @@ const OrderProvider = ({ children }) => {
                         text: 'Você está perto.',
                         buttonText: ['Entrega recebida'],
                         buttonAction: [
-                            () => receivedOrder(currentOrderParam, deliveryId),
+                            () =>
+                                receivedOrder(
+                                    currentOrderParam,
+                                    deliveryIdParam
+                                ),
                         ],
                     });
                 }
@@ -420,15 +460,14 @@ const OrderProvider = ({ children }) => {
                 nextOrder,
                 registerLocation,
                 deliveryOrder,
+                getStorageData,
                 onLocal,
-                orderId,
+                deliveryId,
                 deliveryState,
                 orderStatus,
                 currentOrder,
-                onRunning,
                 userLocation,
                 destination,
-                initOrderStatus,
                 locationOrder,
                 locationOrders,
                 currentOrderIndex,
@@ -436,6 +475,8 @@ const OrderProvider = ({ children }) => {
                 centerCoordinate,
                 zoom,
                 hasManyOrders,
+                onRunning,
+                onNavigation,
             }}
         >
             {children}
