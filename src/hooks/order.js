@@ -121,14 +121,14 @@ const OrderProvider = ({ children }) => {
                     longitude: orderCurrentStorage.customer_address.longitude,
                 });
 
-                // setOnRunning(true);
-                // setOnNavigation(true);
+                setOnRunning(true);
+                setOnNavigation(true);
             }
         }
     }, []);
 
     useEffect(() => {
-        console.log('init');
+        getStorageData();
     }, []);
 
     const newOrder = useCallback(async (delivery) => {
@@ -181,11 +181,7 @@ const OrderProvider = ({ children }) => {
                         delivery.orders[currentOrderIndex],
                         delivery.id
                     ),
-                () =>
-                    declineOrder(
-                        delivery.orders[currentOrderIndex],
-                        delivery.id
-                    ),
+                () => declineOrder(delivery.id),
             ],
         });
         await AsyncStorage.setItem(
@@ -227,11 +223,11 @@ const OrderProvider = ({ children }) => {
             type: 'running',
             text: 'Podemos começar?',
             buttonText: ['Iniciar'],
-            buttonAction: [() => initOrder(delivery, sellerAddress)],
+            buttonAction: [() => initOrder(sellerAddress)],
         });
     }, []);
 
-    const declineOrder = useCallback(async (order, deliveryIdParam) => {
+    const declineOrder = useCallback(async (deliveryIdParam) => {
         // await services.put(`deliveries/${deliveryIdParam}/decline`);
         removeNotification();
         setZoom(18);

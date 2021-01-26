@@ -1,9 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOrder } from 'hooks/order';
 import { useNotification } from 'hooks/notification';
+import { useLocation } from 'hooks/location';
 import MapboxNavigation from './NavigationView';
 
-const Navigation = ({ origin, destination }) => {
+const Navigation = ({ destination }) => {
+    const [origin, setOrigin] = useState();
+
     const {
         registerLocation,
         orderStatus,
@@ -11,10 +14,19 @@ const Navigation = ({ origin, destination }) => {
         deliveryId,
         onNavigation,
     } = useOrder();
+
+    const { getPosition } = useLocation();
+
     const { createNotification, removeNotification } = useNotification();
 
     useEffect(() => {
-        console.log(origin, destination);
+        getPosition().then((position) => {
+            const { latitude, longitude } = position.coords;
+            setOrigin({
+                latitude,
+                longitude,
+            });
+        });
     }, []);
 
     return (
