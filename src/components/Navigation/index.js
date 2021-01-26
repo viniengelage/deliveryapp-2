@@ -13,6 +13,7 @@ const Navigation = ({ destination }) => {
         currentOrder,
         deliveryId,
         onNavigation,
+        onLocal,
     } = useOrder();
 
     const { getPosition } = useLocation();
@@ -20,6 +21,7 @@ const Navigation = ({ destination }) => {
     const { createNotification, removeNotification } = useNotification();
 
     useEffect(() => {
+        console.log(destination);
         getPosition().then((position) => {
             const { latitude, longitude } = position.coords;
             setOrigin({
@@ -49,9 +51,11 @@ const Navigation = ({ destination }) => {
                             longitude,
                             orderStatus,
                             currentOrder,
-                            deliveryId
+                            deliveryId,
+                            onLocal
                         );
                     }}
+                    onCancelNavigation={() => console.log('foi carai')}
                     onError={() => {
                         createNotification({
                             type: 'push',

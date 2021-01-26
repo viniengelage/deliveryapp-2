@@ -74,6 +74,10 @@ const OrderProvider = ({ children }) => {
             'delivery_status'
         );
 
+        const currentOrderIndexStorage = await AsyncStorage.getItem(
+            'current_order_index'
+        );
+
         const deliveryStorage = JSON.parse(
             await AsyncStorage.getItem('delivery')
         );
@@ -86,6 +90,8 @@ const OrderProvider = ({ children }) => {
             setOrderLength(deliveryStorage.orders.length);
             setDeliveryState(deliveryStorage);
             setDeliveryId(deliveryStorage.id);
+            setCurrentOrderIndex(Number(currentOrderIndexStorage));
+            console.log(Number(currentOrderIndexStorage));
 
             if (deliveryStorage.orders.length > 1) {
                 setHasManyOrders(true);
@@ -125,10 +131,6 @@ const OrderProvider = ({ children }) => {
                 setOnNavigation(true);
             }
         }
-    }, []);
-
-    useEffect(() => {
-        getStorageData();
     }, []);
 
     const newOrder = useCallback(async (delivery) => {
@@ -253,7 +255,6 @@ const OrderProvider = ({ children }) => {
 
     const receivedOrder = useCallback(
         async (currentOrderParam, deliveryIdParam) => {
-            setOrderStatus(status.onDelivery);
             removeNotification();
 
             setOnNavigation(false);
@@ -261,6 +262,7 @@ const OrderProvider = ({ children }) => {
 
             // await services.put(`deliveries/${deliveryIdParam}/start`);
             await AsyncStorage.setItem('delivery_status', 'onDelivery');
+            setOrderStatus(status.onDelivery);
 
             const {
                 coords: { latitude, longitude },
@@ -276,8 +278,8 @@ const OrderProvider = ({ children }) => {
                 longitude: currentOrderParam.customer_address.longitude,
             });
 
-            setOnNavigation(true);
             setLoading(false);
+            setOnNavigation(true);
         },
         []
     );
@@ -323,7 +325,7 @@ const OrderProvider = ({ children }) => {
         []
     );
 
-    const nextOrder = useCallback(async (order, currentOrderIndexParam) => {
+    const nextOrder = useCallback(async (delivery, currentOrderIndexParam) => {
         removeNotification();
 
         setOnLocal(false);
@@ -331,31 +333,32 @@ const OrderProvider = ({ children }) => {
 
         setDestination({
             latitude:
-                order.orders[currentOrderIndexParam + 1].customer_address
+                delivery.orders[currentOrderIndexParam + 1].customer_address
                     .latitude,
             longitude:
-                order.orders[currentOrderIndexParam + 1].customer_address
+                delivery.orders[currentOrderIndexParam + 1].customer_address
                     .longitude,
         });
-        setCurrentOrder(order.orders[currentOrderIndexParam + 1]);
-        setCurrentOrderIndex(currentOrderIndexParam + 1);
 
-        setOnNavigation(true);
+        setCurrentOrder(delivery.orders[currentOrderIndexParam + 1]);
+        setCurrentOrderIndex(currentOrderIndexParam + 1);
 
         await AsyncStorage.setItem(
             'current_order',
-            JSON.stringify(order.orders[currentOrderIndexParam + 1])
+            JSON.stringify(delivery.orders[currentOrderIndexParam + 1])
         );
+
+        await AsyncStorage.setItem(
+            'current_order_index',
+            JSON.stringify(currentOrderIndexParam + 1)
+        );
+
+        setOnNavigation(true);
     }, []);
 
     const finishOrder = useCallback(async (order, deliveryIdParam) => {
         // await services.put(`deliveries/${deliveryIdParam}/delivery`);
         // await services.put(`deliveries/${deliveryIdParam}/finalize`);
-
-        setLoading(false);
-
-        setOnNavigation(false);
-        setOnRunning(false);
 
         setCurrentOrder({});
         setCurrentOrderIndex(0);
@@ -363,6 +366,11 @@ const OrderProvider = ({ children }) => {
         setHasManyOrders(false);
         setLocationOrder({});
         setLocationOrders([]);
+
+        setOnNavigation(false);
+        setOnRunning(false);
+
+        setLoading(false);
 
         await AsyncStorage.removeItem('delivery_status');
         await AsyncStorage.removeItem('order');
@@ -391,11 +399,12 @@ const OrderProvider = ({ children }) => {
         async (
             latitude,
             longitude,
-            statusOrder,
+            deliveryStatus,
             currentOrderParam,
-            deliveryIdParam
+            deliveryIdParam,
+            onLocalParam
         ) => {
-            if (statusOrder === status.onReceiving) {
+            if (deliveryStatus === status.onReceiving) {
                 const distance = getDistance(
                     { latitude, longitude },
                     {
@@ -418,7 +427,7 @@ const OrderProvider = ({ children }) => {
                     });
                 }
             }
-            if (statusOrder === status.onDelivery) {
+            if (deliveryStatus === status.onDelivery) {
                 const distance = getDistance(
                     { latitude, longitude },
                     {
@@ -427,7 +436,7 @@ const OrderProvider = ({ children }) => {
                     }
                 );
 
-                if (distance < 100 && !onLocal) {
+                if (distance < 100 && !onLocalParam) {
                     createNotification({
                         type: 'running',
                         text:

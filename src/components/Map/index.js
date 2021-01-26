@@ -24,6 +24,8 @@ Logger.setLogCallback((log) => {
 const Map = ({ userLocation }) => {
     const mapRef = useRef(null);
 
+    const { getStorageData } = useOrder();
+
     function isEmpty(obj) {
         return Object.keys(obj).length === 0;
     }
@@ -41,6 +43,7 @@ const Map = ({ userLocation }) => {
             style={{ flex: 1, zIndex: 3 }}
             compassEnabled
             ref={mapRef}
+            onDidFinishRenderingMapFully={() => getStorageData()}
         >
             {!isEmpty(userLocation) && (
                 <MapboxGL.Camera
