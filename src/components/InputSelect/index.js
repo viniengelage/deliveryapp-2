@@ -13,10 +13,14 @@ import { useTheme } from 'styled-components';
 import { Container, TextInput, Icon, ErrorText } from './styles';
 
 const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
+    const [inputValue, setInputValue] = useState();
+
     const inputElementRef = useRef(null);
+
     const { registerField, defaultValue = '', fieldName, error } = useField(
         name
     );
+
     const inputValueRef = useRef({ value: defaultValue });
 
     const [isFocused, setIsFocused] = useState(false);
@@ -71,19 +75,6 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                             : colors.secundary
                     }
                 />
-
-                {/* <TextInput
-                    ref={inputElementRef}
-                    keyboardAppearance="dark"
-                    placeholderTextColor={colors.text}
-                    onFocus={handleInputFocused}
-                    onBlur={handleInputBlur}
-                    onChangeText={(value) => {
-                        inputValueRef.current.value = value;
-                    }}
-                    {...rest}
-                /> */}
-
                 <Picker
                     ref={inputElementRef}
                     style={{ flex: 1, fontFamily: text.medium }}
@@ -93,11 +84,12 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                         fontFamily: 'Ebrima',
                         fontSize: 17,
                     }}
+                    selectedValue={inputValue}
                     // selectedValue={defaultValue}
-                    onValueChange={(itemValue, itemIndex) => {
-                        inputValueRef.current.value = itemValue;
+                    onValueChange={(value) => {
+                        setInputValue(value);
+                        inputValueRef.current.value = value;
                     }}
-                    placeholder={placeholder}
                 >
                     {options.map((option) => (
                         <Picker.Item
