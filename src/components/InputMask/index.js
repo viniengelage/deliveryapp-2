@@ -3,12 +3,11 @@ import React, {
     useCallback,
     useRef,
     useImperativeHandle,
-    forwardRef,
 } from 'react';
 import { TextInputMask } from 'react-native-masked-text';
 import Input from 'components/Input';
 
-const InputMask = ({ type, ...rest }, ref) => {
+const InputMask = ({ type, icon, ...rest }) => {
     const [value, setValue] = useState('');
     const [rawValue, setRawValue] = useState('');
     const inputElementRef = useRef(null);
@@ -17,21 +16,22 @@ const InputMask = ({ type, ...rest }, ref) => {
         setRawValue(unmaskedValue);
     }, []);
 
-    useImperativeHandle(ref, () => ({
-        focus() {
-            inputElementRef.current.focus();
-        },
-    }));
+    // useImperativeHandle(ref, () => ({
+    //     focus() {
+    //         inputElementRef.current.focus();
+    //     },
+    // }));
 
     return (
         <TextInputMask
             ref={inputElementRef}
-            type={type}
+            type="cpf"
             includeRawValueInChangeText
             value={value}
             onChangeText={handleOnChangeText}
             customTextInput={Input}
             customTextInputProps={{
+                icon,
                 rawValue,
                 ...rest,
             }}
@@ -39,4 +39,4 @@ const InputMask = ({ type, ...rest }, ref) => {
         />
     );
 };
-export default forwardRef(InputMask);
+export default InputMask;

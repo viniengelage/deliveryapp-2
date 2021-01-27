@@ -5,8 +5,8 @@ import { useTheme } from 'styled-components';
 
 import Button from 'components/Button';
 import Input from 'components/InputBasic';
-import MaskedInput from 'components/InputMask';
 import Picker from 'components/InputSelect';
+import Color from 'components/InputColor';
 
 import {
     Container,
@@ -70,7 +70,7 @@ const AddAccount = ({ addAccount }) => {
                     name="bank"
                     placeholder="Banco"
                     type="text"
-                    icon="cash"
+                    icon="university"
                     autoCorrect={false}
                     autoCapitalize="none"
                     keyboardType="default"
@@ -84,7 +84,7 @@ const AddAccount = ({ addAccount }) => {
                     name="bank_agency"
                     placeholder="Agencia"
                     type="text"
-                    icon="cash"
+                    icon="file-invoice-dollar"
                     autoCorrect={false}
                     autoCapitalize="none"
                     keyboardType="numeric"
@@ -98,7 +98,7 @@ const AddAccount = ({ addAccount }) => {
                     name="bank_account"
                     placeholder="Conta"
                     type="text"
-                    icon="cash"
+                    icon="coins"
                     autoCorrect={false}
                     autoCapitalize="none"
                     keyboardType="numeric"
@@ -112,7 +112,7 @@ const AddAccount = ({ addAccount }) => {
                     name="name"
                     placeholder="Nome da conta"
                     type="text"
-                    icon="cash"
+                    icon="file-signature"
                     autoCorrect
                     autoCapitalize="none"
                     keyboardType="default"
@@ -121,12 +121,12 @@ const AddAccount = ({ addAccount }) => {
                         cpfAccountRef.current.focus();
                     }}
                 />
-                <MaskedInput
+                <Input
                     ref={cpfAccountRef}
                     name="cpf_cpnj"
                     placeholder="CPF"
                     type="numeric"
-                    icon="cash"
+                    icon="id-card"
                     autoCorrect={false}
                     autoCapitalize="none"
                     keyboardType="numeric"
@@ -137,9 +137,14 @@ const AddAccount = ({ addAccount }) => {
                 />
                 <Picker
                     name="type"
-                    icon="cash"
+                    icon="key"
                     options={options}
                     placeholder="Teste"
+                />
+                <Color
+                    name="color"
+                    icon="palette"
+                    placeholder="Cor para representar conta"
                 />
                 <Button
                     loading={loading}
