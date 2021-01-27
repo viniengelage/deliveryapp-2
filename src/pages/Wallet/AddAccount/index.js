@@ -5,6 +5,7 @@ import { useTheme } from 'styled-components';
 
 import Button from 'components/Button';
 import Input from 'components/InputBasic';
+import MaskedInput from 'components/InputMask';
 import Picker from 'components/InputSelect';
 
 import {
@@ -50,8 +51,9 @@ const AddAccount = ({ addAccount }) => {
     // },
 
     const options = [
-        { label: 'teste', value: 'teste' },
-        { label: 'teste2', value: 'teste2' },
+        { label: 'Escolha um tipo de conta', value: 'Choice' },
+        { label: 'Poupança', value: 'Poupança' },
+        { label: 'Corrente', value: 'Corrente' },
     ];
 
     return (
@@ -119,10 +121,10 @@ const AddAccount = ({ addAccount }) => {
                         cpfAccountRef.current.focus();
                     }}
                 />
-                <Input
+                <MaskedInput
                     ref={cpfAccountRef}
                     name="cpf_cpnj"
-                    placeholder="CPF ou CNPJ"
+                    placeholder="CPF"
                     type="numeric"
                     icon="cash"
                     autoCorrect={false}
