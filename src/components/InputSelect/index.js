@@ -86,10 +86,18 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                     }}
                     selectedValue={inputValue}
                     // selectedValue={defaultValue}
-                    onValueChange={(value) => {
+                    onValueChange={(value, index) => {
+                        if (index === 0) {
+                            setIsFilled(false);
+                            setIsFocused(false);
+                        } else {
+                            setIsFilled(true);
+                            setIsFocused(true);
+                        }
                         setInputValue(value);
                         inputValueRef.current.value = value;
                     }}
+                    focusable
                 >
                     {options.map((option) => (
                         <Picker.Item

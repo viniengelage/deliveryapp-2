@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import br from 'dayjs/locale/pt-br';
 import localeData from 'dayjs/plugin/localeData';
 
-import Icon from 'react-native-ionicons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 import Map from 'components/Map';
 import Navigation from 'components/Navigation';
@@ -157,7 +157,12 @@ const Home = () => {
                                 <IconContainer
                                     onPress={() => navigation.openDrawer()}
                                 >
-                                    <Icon name="menu" size={38} color="#fff" />
+                                    <Icon
+                                        name="bars"
+                                        size={28}
+                                        color="#fff"
+                                        light
+                                    />
                                 </IconContainer>
                             </Header>
                             <WalletContainer>
@@ -172,7 +177,7 @@ const Home = () => {
                                 </Date>
                                 <ChartContainer>
                                     <Icon
-                                        name="cellular"
+                                        name="chart-bar"
                                         color={colors.background}
                                         size={24}
                                     />

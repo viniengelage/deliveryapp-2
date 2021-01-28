@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components/native';
+import { Form as Unform } from '@unform/mobile';
 
 import ButtonComponent from 'components/Button';
 import NotificationImg from 'assets/notification.svg';
@@ -10,6 +11,17 @@ export const Background = styled.View`
     position: absolute;
     width: 100%;
     height: 100%;
+    padding: 0 20px;
+`;
+
+export const CurrencyContainer = styled.View`
+    background: rgba(63, 61, 86, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 0 20px;
+    justify-content: center;
+    align-items: center;
 `;
 
 export const Container = styled.View`
@@ -39,13 +51,7 @@ export const Container = styled.View`
             height: 160px;
             width: 320px;
         `}
-
     ${(props) =>
-        props.push &&
-        css`
-            top: 40%;
-        `}
-        ${(props) =>
         props.extract &&
         css`
             border: none;
@@ -56,11 +62,16 @@ export const Container = styled.View`
             height: 170px;
             width: 320px;
         `}
+        ${(props) =>
+        props.currency &&
+        css`
+            padding: 20px;
+            width: 100%;
+            height: 300px;
+        `}
 `;
 
-export const ButtonContainer = styled.View`
-    flex-direction: row;
-`;
+export const ButtonContainer = styled.View``;
 export const Bar = styled.View`
     background-color: ${(props) => props.theme.colors.primary};
     width: 100%;
@@ -75,7 +86,7 @@ export const Button = styled(ButtonComponent)`
     ${(props) =>
         props.push &&
         css`
-            margin-top: 30px;
+            margin-top: 10px;
         `}
 `;
 export const Title = styled.Text`
@@ -105,6 +116,11 @@ export const Title = styled.Text`
             margin-left: 20px;
             margin-bottom: 5px;
         `}
+        ${(props) =>
+        props.currency &&
+        css`
+            text-align: center;
+        `}
 `;
 
 export const Description = styled.Text`
@@ -131,4 +147,8 @@ export const DetailSvg = styled(DetailImg)`
     position: absolute;
     bottom: -19px;
     right: 2px;
+`;
+
+export const Form = styled(Unform)`
+    width: 100%;
 `;

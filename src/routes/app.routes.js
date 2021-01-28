@@ -1,6 +1,6 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import Icon from 'react-native-ionicons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { StyleSheet } from 'react-native';
 
 import CustomDrawer from 'components/CustomDrawer';
@@ -40,12 +40,13 @@ const AuthRoutes = ({ token }) => {
                     component={Home}
                     options={{
                         title: 'Home',
-                        drawerIcon: ({ size }) => (
+                        drawerIcon: () => (
                             <Icon
                                 name="home"
-                                size={size}
+                                size={24}
                                 color={colors.background}
                                 style={styles.icon}
+                                light
                             />
                         ),
                     }}
@@ -55,12 +56,13 @@ const AuthRoutes = ({ token }) => {
                     component={Wallet}
                     options={{
                         title: 'Carteira',
-                        drawerIcon: ({ size }) => (
+                        drawerIcon: () => (
                             <Icon
                                 name="wallet"
-                                size={size}
+                                size={24}
                                 color={colors.background}
                                 style={styles.icon}
+                                light
                             />
                         ),
                     }}

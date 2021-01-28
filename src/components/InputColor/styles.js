@@ -73,6 +73,7 @@ export const Placeholder = styled.Text`
     flex: 1;
     font-size: 16px;
     font-family: ${(props) => props.theme.text.bold};
+    color: ${(props) => props.theme.colors.secundary};
 `;
 
 export const ErrorText = styled.Text`

@@ -6,13 +6,16 @@ import React, {
     useState,
     useCallback,
 } from 'react';
+import { useTheme } from 'styled-components';
 import { useField } from '@unform/core';
 
-import { useTheme } from 'styled-components';
+import CurrencyInput from 'react-native-currency-input';
 
-import { Container, TextInput, Icon, ErrorText } from './styles';
+import { Container, Icon, ErrorText } from './styles';
 
-const InputBasic = ({ name, icon, ...rest }, ref) => {
+const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
+    const [formattedValue, setFormattedValue] = useState(0);
+
     const inputElementRef = useRef(null);
     const { registerField, defaultValue = '', fieldName, error } = useField(
         name
@@ -23,6 +26,11 @@ const InputBasic = ({ name, icon, ...rest }, ref) => {
     const [isFilled, setIsFilled] = useState(false);
 
     const { colors, shadow } = useTheme();
+
+    const handleChange = useCallback((data) => {
+        setFormattedValue(data);
+        inputValueRef.current.value = data;
+    }, []);
 
     const handleInputFocused = useCallback(() => {
         setIsFocused(true);
@@ -74,15 +82,17 @@ const InputBasic = ({ name, icon, ...rest }, ref) => {
                     solid
                 />
 
-                <TextInput
+                <CurrencyInput
                     ref={inputElementRef}
-                    keyboardAppearance="dark"
-                    placeholderTextColor={colors.text}
+                    value={formattedValue}
+                    onChangeValue={handleChange}
                     onFocus={handleInputFocused}
                     onBlur={handleInputBlur}
-                    onChangeText={(value) => {
-                        inputValueRef.current.value = value;
-                    }}
+                    placeholder={placeholder}
+                    unit="R$"
+                    delimiter=","
+                    separator="."
+                    precision={2}
                     {...rest}
                 />
             </Container>

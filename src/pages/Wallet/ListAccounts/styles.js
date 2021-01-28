@@ -1,4 +1,4 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 import { Image } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 
@@ -15,6 +15,11 @@ export const Header = styled.View`
     margin-top: 60px;
     height: 100px;
 `;
+
+export const WithDrawContainer = styled.View`
+    z-index: 10;
+`;
+
 export const MenuContainer = styled(RectButton)`
     width: 48px;
     height: 48px;
@@ -35,6 +40,7 @@ export const WalletContainer = styled(RectButton)`
     width: 100%;
     flex-direction: row;
     align-items: center;
+    margin-bottom: 30px;
 `;
 export const Coin = styled.Text`
     font-family: ${(props) => props.theme.text.bold};
@@ -54,20 +60,28 @@ export const Illustration = styled(Image)`
     right: 0;
 `;
 
-export const BankCard = styled.View`
-    background-color: ${(props) => props.theme.colors.secundary};
+export const BankCard = styled(RectButton)`
+    background-color: ${(props) => props.background};
     width: 100%;
     height: 60px;
     border-radius: 12px;
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     padding: 0 30px;
-    margin-top: 30px;
+    margin-bottom: 10px;
     position: relative;
+    z-index: 1;
+`;
+
+export const AccountContainer = styled.View`
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 `;
 export const Name = styled.Text`
     color: ${(props) => props.theme.colors.button};
-    font-family: ${(props) => props.theme.text.medium};
+    font-family: ${(props) => props.theme.text.bold};
     margin-left: 10px;
     font-size: 18px;
 `;

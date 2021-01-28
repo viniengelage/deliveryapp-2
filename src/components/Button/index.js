@@ -19,11 +19,12 @@ const Button = ({
     loading,
     ...rest
 }) => {
-    const { colors } = useTheme();
+    const { colors, shadow } = useTheme();
     return (
         <Container
             withoutBackground={withoutBackground}
             notification={notification}
+            style={!withoutBackground && shadow}
             {...rest}
         >
             {loading ? (

@@ -43,16 +43,7 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isFilled, setIsFilled] = useState(false);
 
-    const { colors, text } = useTheme();
-
-    const handleInputFocused = useCallback(() => {
-        setIsFocused(true);
-    }, []);
-
-    const handleInputBlur = useCallback(() => {
-        setIsFocused(false);
-        setIsFilled(!!inputValueRef.current.value);
-    }, []);
+    const { colors } = useTheme();
 
     useImperativeHandle(ref, () => ({
         focus() {
@@ -102,6 +93,8 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                         color={color}
                         onColorChange={changeColor}
                         onColorSelected={(colorParam) => {
+                            setIsFocused(true);
+                            setIsFilled(true);
                             setColor(colorParam);
                             setVisible(false);
                         }}

@@ -25,31 +25,33 @@ const getKey = async () => {
     return access_token;
 };
 
-const refreshAuthLogic = (failedRequest) =>
-    axios
-        .post(
-            `${process.env.REACT_APP_GUARDIAN}/auth/refresh`,
-            {},
-            {
-                headers: {
-                    authorization: `Bearer ${getKey()}`,
-                },
-            }
-        )
-        .then(async (tokenRefreshResponse) => {
-            await AsyncStorage.setItem(
-                'access_token',
-                tokenRefreshResponse.data.access_token
-            );
-            failedRequest.response.config.headers.Authorization = `Bearer ${tokenRefreshResponse.data.access_token}`;
-            return Promise.resolve();
-        })
-        .catch(async () => {
-            await AsyncStorage.removeItem('access_token');
-        });
-
+const refreshAuthLogic = (failedRequest) => {
+    getKey().then((access_token) =>
+        axios
+            .post(
+                `https://guardian.agoratem.com.br/api/v1/auth/refresh`,
+                {},
+                {
+                    headers: {
+                        authorization: `Bearer ${access_token}`,
+                    },
+                }
+            )
+            .then(async (tokenRefreshResponse) => {
+                await AsyncStorage.setItem(
+                    'access_token',
+                    tokenRefreshResponse.data.access_token
+                );
+                failedRequest.response.config.headers.Authorization = `Bearer ${tokenRefreshResponse.data.access_token}`;
+                return Promise.resolve();
+            })
+            .catch(async () => {
+                await AsyncStorage.removeItem('access_token');
+            })
+    );
+};
 const options = {
-    statusCodes: [401, 403], // default: [ 401 ]
+    statusCodes: [401, 403],
 };
 
 createAuthRefreshInterceptor(auth, refreshAuthLogic, options);
