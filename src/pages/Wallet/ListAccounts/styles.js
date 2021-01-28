@@ -1,11 +1,28 @@
 import styled, { css } from 'styled-components/native';
 import { Image } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
+import { Form as Unform } from '@unform/mobile';
 
 export const Container = styled.View`
     height: 100%;
     width: 100%;
     padding: 0 30px;
+`;
+
+export const CarouselContainer = styled.View`
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+`;
+
+export const NextContainer = styled(RectButton)`
+    background-color: ${(props) => props.theme.colors.secundary};
+    width: 48px;
+    height: 48px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 24px;
+    margin-left: 10px;
 `;
 
 export const Header = styled.View`
@@ -62,14 +79,13 @@ export const Illustration = styled(Image)`
 
 export const BankCard = styled(RectButton)`
     background-color: ${(props) => props.background};
-    width: 100%;
+    width: 80%;
     height: 60px;
     border-radius: 12px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     padding: 0 30px;
-    margin-bottom: 10px;
     position: relative;
     z-index: 1;
 `;
@@ -108,3 +124,25 @@ export const AddContainer = styled(RectButton)`
     justify-content: center;
     align-items: center;
 `;
+
+export const FormTitle = styled.Text`
+    font-size: 22px;
+    font-family: ${(props) => props.theme.text.bold};
+    color: ${(props) => props.theme.colors.secundary};
+    margin-top: 30px;
+`;
+
+export const Form = styled(Unform)`
+    width: 100%;
+    margin-top: 30px;
+`;
+
+export const FormContainer = styled.View`
+    width: 100%;
+    height: 300px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+`;
+
+export const CarouselAlign = styled.View``;

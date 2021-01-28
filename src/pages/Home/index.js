@@ -6,6 +6,7 @@ import { useTransition, animated } from 'react-spring';
 import dayjs from 'dayjs';
 import br from 'dayjs/locale/pt-br';
 import localeData from 'dayjs/plugin/localeData';
+import { formatNumber } from 'react-native-currency-input';
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
@@ -86,8 +87,15 @@ const Home = () => {
 
     const getWallet = useCallback(async () => {
         try {
-            const response = await transactions.get('/wallets');
-            setBalance(response.data.data.balance);
+            const response = await transactions.patch('/wallets');
+            setBalance(
+                formatNumber(response.data.data.balance, {
+                    separator: ',',
+                    precision: 2,
+                    delimiter: '.',
+                    ignoreNegative: true,
+                })
+            );
         } catch (error) {
             console.log(error.response.data);
         }

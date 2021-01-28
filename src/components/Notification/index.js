@@ -1,9 +1,14 @@
-import React, { Fragment, useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
+import * as Yup from 'yup';
 
 import ButtonForm from 'components/Button';
 import Currency from 'components/InputCurrency';
 
+import { useNotification } from 'hooks/notification';
+import getValidationErrors from 'utils/getValidationsErrors';
+
+import { transactions } from 'services/api';
 import {
     Container,
     NotificationSvg,
@@ -12,9 +17,7 @@ import {
     ButtonContainer,
     Button,
     Bar,
-    Background,
     Description,
-    Form,
     CurrencyContainer,
 } from './styles';
 
@@ -25,15 +28,16 @@ const Notification = ({
     buttonText,
     buttonAction,
 }) => {
-    const formRef = useRef(null);
-
     const runningProps = useSpring({ opacity: type ? 1 : 0 });
     const pushProps = useSpring({ opacity: type ? 1 : 0 });
     const AnimatedContainer = animated(Container);
 
-    const handleSubmit = useCallback((data) => {
-        console.log(data);
-    }, []);
+    // {
+    //     "type": "int",
+    //     "ammount": "1000.00",
+    //     "wallet_token": "wlt-16ca5de8-da04-4a22-a6e8-ca1ab0553129",
+    //     "trm_token": "trm-64a3123f-f8ec-4508-83ec-bde672435da9"
+    // }
 
     return (
         <>
@@ -97,28 +101,6 @@ const Notification = ({
                     </ButtonContainer>
                     <DetailSvg width={70} />
                 </AnimatedContainer>
-            )}
-
-            {type === 'currency' && (
-                <CurrencyContainer>
-                    <AnimatedContainer currency style={runningProps}>
-                        <Title currency>
-                            Escolha o valor que deseja receber
-                        </Title>
-                        <Form onSubmit={handleSubmit} ref={formRef}>
-                            <Currency
-                                name="amount"
-                                icon="money-check-alt"
-                                placeholder="Digite o valor"
-                            />
-                            <ButtonForm
-                                onPress={() => formRef.current.submitForm()}
-                            >
-                                Enviar
-                            </ButtonForm>
-                        </Form>
-                    </AnimatedContainer>
-                </CurrencyContainer>
             )}
         </>
     );

@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components/native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import CurrencyInput from 'react-native-currency-input';
 
 export const Container = styled.View`
     width: 100%;
@@ -33,6 +34,12 @@ export const Container = styled.View`
         css`
             border-color: ${props.theme.colors.primary};
         `}
+`;
+
+export const Currency = styled(CurrencyInput)`
+    width: 100%;
+    font-size: 16px;
+    font-family: ${(props) => props.theme.text.bold};
 `;
 
 export const Icon = styled(FontAwesome5)`

@@ -9,9 +9,7 @@ import React, {
 import { useTheme } from 'styled-components';
 import { useField } from '@unform/core';
 
-import CurrencyInput from 'react-native-currency-input';
-
-import { Container, Icon, ErrorText } from './styles';
+import { Container, Currency, Icon, ErrorText } from './styles';
 
 const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
     const [formattedValue, setFormattedValue] = useState(0);
@@ -52,14 +50,6 @@ const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
             name: fieldName,
             ref: inputValueRef.current,
             path: 'value',
-            setValue(ref, value) {
-                inputValueRef.current.value = value;
-                inputElementRef.current.setNativeProps({ text: value });
-            },
-            clearValue() {
-                inputValueRef.current.value = '';
-                inputElementRef.current.clear();
-            },
         });
     }, [fieldName, registerField]);
 
@@ -82,7 +72,8 @@ const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
                     solid
                 />
 
-                <CurrencyInput
+                <Currency
+                    placeholderTextColor={colors.secundary}
                     ref={inputElementRef}
                     value={formattedValue}
                     onChangeValue={handleChange}
@@ -91,7 +82,7 @@ const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
                     placeholder={placeholder}
                     unit="R$"
                     delimiter=","
-                    separator="."
+                    separator=","
                     precision={2}
                     {...rest}
                 />

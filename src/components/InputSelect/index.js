@@ -6,36 +6,29 @@ import React, {
     useState,
     useCallback,
 } from 'react';
+import ModalDropdown from 'react-native-modal-dropdown';
 import { useField } from '@unform/core';
-import { Picker } from '@react-native-picker/picker';
+import { Platform } from 'react-native';
 import { useTheme } from 'styled-components';
 
-import { Container, TextInput, Icon, ErrorText } from './styles';
+import { Container, Icon, ErrorText } from './styles';
 
 const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
-    const [inputValue, setInputValue] = useState();
-
     const inputElementRef = useRef(null);
 
-    const { registerField, defaultValue = '', fieldName, error } = useField(
-        name
-    );
+    const {
+        registerField,
+        defaultValue = options.length !== 0 && options[0].value,
+        fieldName,
+        error,
+    } = useField(name);
 
     const inputValueRef = useRef({ value: defaultValue });
 
     const [isFocused, setIsFocused] = useState(false);
     const [isFilled, setIsFilled] = useState(false);
 
-    const { colors, text } = useTheme();
-
-    const handleInputFocused = useCallback(() => {
-        setIsFocused(true);
-    }, []);
-
-    const handleInputBlur = useCallback(() => {
-        setIsFocused(false);
-        setIsFilled(!!inputValueRef.current.value);
-    }, []);
+    const { colors, text, shadow } = useTheme();
 
     useImperativeHandle(ref, () => ({
         focus() {
@@ -48,16 +41,22 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
             name: fieldName,
             ref: inputValueRef.current,
             path: 'value',
-            setValue(ref, value) {
-                inputValueRef.current.value = value;
-                inputElementRef.current.setNativeProps({ text: value });
-            },
-            clearValue() {
-                inputValueRef.current.value = '';
-                inputElementRef.current.clear();
-            },
         });
     }, [fieldName, registerField]);
+
+    const getLabelOptions = useCallback(() => {
+        const labels = [];
+
+        options.map((option) => labels.push(option.label));
+
+        return labels;
+    }, []);
+
+    const getValueOptions = useCallback((index) => {
+        console.log(
+            `ò item clicado foi ${options[index].label} e seu valor é ${options[index].value}`
+        );
+    }, []);
 
     return (
         <>
@@ -75,38 +74,47 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                             : colors.secundary
                     }
                 />
-                <Picker
+                <ModalDropdown
                     ref={inputElementRef}
-                    style={{ flex: 1, fontFamily: text.medium }}
-                    itemStyle={{
-                        backgroundColor: 'grey',
-                        color: 'blue',
-                        fontFamily: 'Ebrima',
-                        fontSize: 17,
+                    defaultValue={placeholder}
+                    options={getLabelOptions()}
+                    textStyle={{
+                        color: colors.secundary,
+                        fontFamily: text.bold,
+                        fontSize: 16,
+                        marginLeft: 0,
+                        paddingLeft: 0,
                     }}
-                    selectedValue={inputValue}
-                    // selectedValue={defaultValue}
-                    onValueChange={(value, index) => {
-                        if (index === 0) {
-                            setIsFilled(false);
-                            setIsFocused(false);
-                        } else {
-                            setIsFilled(true);
-                            setIsFocused(true);
-                        }
-                        setInputValue(value);
-                        inputValueRef.current.value = value;
+                    dropdownTextStyle={{
+                        color: colors.secundary,
+                        fontFamily: text.bold,
+                        fontSize: 16,
+                        marginLeft: 0,
+                        paddingLeft: 0,
                     }}
-                    focusable
-                >
-                    {options.map((option) => (
-                        <Picker.Item
-                            key={option.value}
-                            value={option.value}
-                            label={option.label}
-                        />
-                    ))}
-                </Picker>
+                    dropdownStyle={[
+                        {
+                            width: '70%',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderRadius: 12,
+                            height: 100,
+                        },
+                        shadow,
+                    ]}
+                    style={{
+                        position: 'relative',
+                        width: '100%',
+                        borderWidth: 0,
+                        paddingRight: 30,
+                    }}
+                    onSelect={(index, item) => {
+                        console.log(item);
+                        setIsFilled(true);
+                        setIsFocused(true);
+                        getValueOptions(index);
+                    }}
+                />
             </Container>
             {error && <ErrorText>{error}</ErrorText>}
         </>

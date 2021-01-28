@@ -109,7 +109,6 @@ const AddAccount = ({ addAccount }) => {
     }, []);
 
     const options = [
-        { label: 'Escolha um tipo de conta', value: 'Choice' },
         { label: 'Poupança', value: 'Poupança' },
         { label: 'Corrente', value: 'Corrente' },
     ];

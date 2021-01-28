@@ -15,6 +15,7 @@ export const Container = styled.View`
     align-items: center;
 
     text-shadow: 10px 5px;
+    position: relative;
 
     ${(props) =>
         props.isErrored &&

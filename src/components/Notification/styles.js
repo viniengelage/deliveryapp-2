@@ -67,7 +67,7 @@ export const Container = styled.View`
         css`
             padding: 20px;
             width: 100%;
-            height: 300px;
+            height: 360px;
         `}
 `;
 
