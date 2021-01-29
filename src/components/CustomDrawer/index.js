@@ -1,5 +1,5 @@
 import React from 'react';
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 
 import defaultProfile from 'assets/profile.png';
@@ -14,6 +14,8 @@ import {
     LogoContainer,
     Logo,
     Switch,
+    LogoutContainer,
+    LougoutText,
 } from './styles';
 
 const CustomDrawer = ({ user, signOut, ...props }) => {
@@ -37,8 +39,8 @@ const CustomDrawer = ({ user, signOut, ...props }) => {
                 }}
             />
             <DrawerItem
-                label="Receber entregas"
-                onPress={() => signOut()}
+                label={isEnabled ? 'Recebendo pedidos' : 'Não recebendo'}
+                onPress={toggleSwitch}
                 icon={() => (
                     <Switch value={isEnabled} onValueChange={toggleSwitch} />
                 )}
@@ -52,25 +54,16 @@ const CustomDrawer = ({ user, signOut, ...props }) => {
                     isEnabled ? colors.sucess : colors.error
                 }
             />
-            <DrawerItem
-                label="Sair"
-                onPress={() => signOut()}
-                icon={({ size }) => (
-                    <Icon
-                        name="log-out"
-                        size={size}
-                        color={colors.background}
-                        style={{ marginLeft: 20 }}
-                    />
-                )}
-                labelStyle={{
-                    fontSize: 16,
-                    fontFamily: text.bold,
-                    color: '#fff',
-                    marginLeft: -10,
-                }}
-                inactiveBackgroundColor={colors.secundary}
-            />
+            <LogoutContainer onPress={() => signOut()}>
+                <Icon
+                    name="sign-out-alt"
+                    size={24}
+                    color={colors.secundary}
+                    style={{ marginLeft: 20 }}
+                    light
+                />
+                <LougoutText>Sair</LougoutText>
+            </LogoutContainer>
             <AvatarContainer>
                 <Avatar
                     source={user.img ? { uri: user.img } : defaultProfile}

@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components/native';
-import IoIcons from 'react-native-ionicons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import CurrencyInput from 'react-native-currency-input';
 
 export const Container = styled.View`
     width: 100%;
@@ -27,11 +28,28 @@ export const Container = styled.View`
         css`
             border-color: ${props.theme.colors.primary};
         `}
+
+            ${(props) =>
+        props.isFilled &&
+        css`
+            border-color: ${props.theme.colors.primary};
+        `}
 `;
 
-export const Icon = styled(IoIcons)`
+export const Currency = styled(CurrencyInput)`
+    width: 100%;
+    font-size: 16px;
+    font-family: ${(props) => props.theme.text.bold};
+`;
+
+export const Icon = styled(FontAwesome5)`
     margin-right: 10px;
-    color: ${(props) => props.theme.colors.text};
+`;
+
+export const TextInput = styled.TextInput`
+    flex: 1;
+    font-size: 16px;
+    font-family: ${(props) => props.theme.text.bold};
 `;
 
 export const ErrorText = styled.Text`

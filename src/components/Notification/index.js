@@ -1,6 +1,14 @@
-import React, { Fragment } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
+import * as Yup from 'yup';
 
+import ButtonForm from 'components/Button';
+import Currency from 'components/InputCurrency';
+
+import { useNotification } from 'hooks/notification';
+import getValidationErrors from 'utils/getValidationsErrors';
+
+import { transactions } from 'services/api';
 import {
     Container,
     NotificationSvg,
@@ -9,8 +17,8 @@ import {
     ButtonContainer,
     Button,
     Bar,
-    Background,
     Description,
+    CurrencyContainer,
 } from './styles';
 
 const Notification = ({
@@ -19,19 +27,23 @@ const Notification = ({
     description,
     buttonText,
     buttonAction,
-    withBackground,
 }) => {
     const runningProps = useSpring({ opacity: type ? 1 : 0 });
     const pushProps = useSpring({ opacity: type ? 1 : 0 });
     const AnimatedContainer = animated(Container);
 
-    const BooleanBackground = withBackground ? Background : Fragment;
+    // {
+    //     "type": "int",
+    //     "ammount": "1000.00",
+    //     "wallet_token": "wlt-16ca5de8-da04-4a22-a6e8-ca1ab0553129",
+    //     "trm_token": "trm-64a3123f-f8ec-4508-83ec-bde672435da9"
+    // }
 
     return (
         <>
             {type === 'push' && (
-                <BooleanBackground>
-                    <AnimatedContainer push style={pushProps}>
+                <CurrencyContainer>
+                    <AnimatedContainer style={pushProps}>
                         <Title push>{text}</Title>
                         <ButtonContainer push>
                             {buttonText &&
@@ -48,7 +60,7 @@ const Notification = ({
                         </ButtonContainer>
                         <NotificationSvg />
                     </AnimatedContainer>
-                </BooleanBackground>
+                </CurrencyContainer>
             )}
 
             {type === 'running' && (
@@ -71,9 +83,9 @@ const Notification = ({
             )}
 
             {type === 'extract' && (
-                <AnimatedContainer extract style={runningProps}>
+                <AnimatedContainer push style={pushProps}>
                     <Bar />
-                    <Title extract>{text}</Title>
+                    <Title push>{text}</Title>
                     <Description>{description}</Description>
                     <ButtonContainer>
                         {buttonText &&

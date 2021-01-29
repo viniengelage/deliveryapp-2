@@ -81,7 +81,7 @@ const Login = () => {
                 <Form ref={formRef} onSubmit={handleSubmit}>
                     <InputBasic
                         name="email"
-                        icon="mail"
+                        icon="user"
                         placeholder="E-mail"
                         autoCorrect={false}
                         autoCapitalize="none"
@@ -94,7 +94,7 @@ const Login = () => {
                     <InputBasic
                         ref={passwordRef}
                         name="password"
-                        icon="lock"
+                        icon="user-lock"
                         placeholder="Senha"
                         secureTextEntry
                         returnKeyType="send"

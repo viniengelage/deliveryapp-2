@@ -6,8 +6,9 @@ import { useTransition, animated } from 'react-spring';
 import dayjs from 'dayjs';
 import br from 'dayjs/locale/pt-br';
 import localeData from 'dayjs/plugin/localeData';
+import { formatNumber } from 'react-native-currency-input';
 
-import Icon from 'react-native-ionicons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 import Map from 'components/Map';
 import Navigation from 'components/Navigation';
@@ -69,10 +70,10 @@ const Home = () => {
     const {
         newOrder,
         destination,
-        initOrderStatus,
         onRunning,
         currentOrder,
         deliveryState,
+        onNavigation,
     } = useOrder();
 
     const { getPosition } = useLocation();
@@ -86,8 +87,15 @@ const Home = () => {
 
     const getWallet = useCallback(async () => {
         try {
-            const response = await transactions.get('/wallets');
-            setBalance(response.data.data.balance);
+            const response = await transactions.patch('/wallets');
+            setBalance(
+                formatNumber(response.data.data.balance, {
+                    separator: ',',
+                    precision: 2,
+                    delimiter: '.',
+                    ignoreNegative: true,
+                })
+            );
         } catch (error) {
             console.log(error.response.data);
         }
@@ -106,7 +114,7 @@ const Home = () => {
 
     return (
         <>
-            {userLocation && initOrderStatus ? (
+            {userLocation && onNavigation ? (
                 <>
                     <StatusBar
                         barStyle="light-content"
@@ -157,7 +165,12 @@ const Home = () => {
                                 <IconContainer
                                     onPress={() => navigation.openDrawer()}
                                 >
-                                    <Icon name="menu" size={38} color="#fff" />
+                                    <Icon
+                                        name="bars"
+                                        size={28}
+                                        color="#fff"
+                                        light
+                                    />
                                 </IconContainer>
                             </Header>
                             <WalletContainer>
@@ -172,7 +185,7 @@ const Home = () => {
                                 </Date>
                                 <ChartContainer>
                                     <Icon
-                                        name="cellular"
+                                        name="chart-bar"
                                         color={colors.background}
                                         size={24}
                                     />
@@ -181,11 +194,11 @@ const Home = () => {
                             </DateContainer>
                             <Bar />
                         </HeaderContainer>
-                        {/* <OrderButton
+                        <OrderButton
                             onPress={() => newOrder(order, userLocation)}
                         >
                             <Icon name="archive" size={32} />
-                        </OrderButton> */}
+                        </OrderButton>
                         <MapContainer>
                             {userLocation && (
                                 <Map userLocation={userLocation} />

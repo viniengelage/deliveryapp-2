@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components/native';
-import IoIcons from 'react-native-ionicons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 export const Container = styled.View`
     width: 100%;
@@ -35,7 +35,7 @@ export const Container = styled.View`
         `}
 `;
 
-export const Icon = styled(IoIcons)`
+export const Icon = styled(FontAwesome5)`
     margin-right: 10px;
 `;
 

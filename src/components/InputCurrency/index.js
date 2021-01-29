@@ -6,13 +6,14 @@ import React, {
     useState,
     useCallback,
 } from 'react';
+import { useTheme } from 'styled-components';
 import { useField } from '@unform/core';
 
-import { useTheme } from 'styled-components';
+import { Container, Currency, Icon, ErrorText } from './styles';
 
-import { Container, TextInput, Icon, ErrorText } from './styles';
+const InputCurrency = ({ name, icon, placeholder, ...rest }, ref) => {
+    const [formattedValue, setFormattedValue] = useState();
 
-const InputBasic = ({ name, icon, ...rest }, ref) => {
     const inputElementRef = useRef(null);
     const { registerField, defaultValue = '', fieldName, error } = useField(
         name
@@ -23,6 +24,11 @@ const InputBasic = ({ name, icon, ...rest }, ref) => {
     const [isFilled, setIsFilled] = useState(false);
 
     const { colors, shadow } = useTheme();
+
+    const handleChange = useCallback((data) => {
+        setFormattedValue(data);
+        inputValueRef.current.value = data;
+    }, []);
 
     const handleInputFocused = useCallback(() => {
         setIsFocused(true);
@@ -44,13 +50,8 @@ const InputBasic = ({ name, icon, ...rest }, ref) => {
             name: fieldName,
             ref: inputValueRef.current,
             path: 'value',
-            setValue(ref, value) {
-                inputValueRef.current.value = value;
-                inputElementRef.current.setNativeProps({ text: value });
-            },
             clearValue() {
                 inputValueRef.current.value = '';
-                inputElementRef.current.clear();
             },
         });
     }, [fieldName, registerField]);
@@ -74,15 +75,18 @@ const InputBasic = ({ name, icon, ...rest }, ref) => {
                     solid
                 />
 
-                <TextInput
+                <Currency
                     ref={inputElementRef}
-                    keyboardAppearance="dark"
-                    placeholderTextColor={colors.text}
+                    placeholderTextColor={colors.secundary}
+                    value={formattedValue}
+                    onChangeValue={handleChange}
                     onFocus={handleInputFocused}
                     onBlur={handleInputBlur}
-                    onChangeText={(value) => {
-                        inputValueRef.current.value = value;
-                    }}
+                    placeholder={placeholder}
+                    unit="R$"
+                    delimiter=","
+                    separator=","
+                    precision={2}
                     {...rest}
                 />
             </Container>
@@ -91,4 +95,4 @@ const InputBasic = ({ name, icon, ...rest }, ref) => {
     );
 };
 
-export default forwardRef(InputBasic);
+export default forwardRef(InputCurrency);

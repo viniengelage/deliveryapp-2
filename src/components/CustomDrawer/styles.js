@@ -1,6 +1,7 @@
 import styled from 'styled-components/native';
 import LogoImg from 'assets/logo.svg';
 import { Switch as SwitchButton } from 'react-native';
+import { RectButton } from 'react-native-gesture-handler';
 
 export const Container = styled.View`
     flex: 1;
@@ -55,4 +56,20 @@ export const Avatar = styled.Image`
     border-radius: 32px;
     align-items: center;
     margin-left: 20px;
+`;
+
+export const LogoutContainer = styled(RectButton)`
+    position: absolute;
+    bottom: 150px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+`;
+
+export const LougoutText = styled.Text`
+    font-size: 16px;
+    font-family: ${(props) => props.theme.text.bold};
+    color: ${(props) => props.theme.colors.secundary};
+    margin-left: 10px;
 `;
