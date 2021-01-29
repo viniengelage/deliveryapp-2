@@ -57,7 +57,6 @@ export const WalletContainer = styled(RectButton)`
     width: 100%;
     flex-direction: row;
     align-items: center;
-    margin-bottom: 30px;
 `;
 export const Coin = styled.Text`
     font-family: ${(props) => props.theme.text.bold};
@@ -129,20 +128,19 @@ export const FormTitle = styled.Text`
     font-size: 22px;
     font-family: ${(props) => props.theme.text.bold};
     color: ${(props) => props.theme.colors.secundary};
-    margin-top: 30px;
 `;
 
 export const Form = styled(Unform)`
     width: 100%;
-    margin-top: 30px;
+    margin-top: 20px;
 `;
 
 export const FormContainer = styled.View`
     width: 100%;
-    height: 300px;
     justify-content: center;
     align-items: center;
-    margin-top: 30px;
 `;
 
-export const CarouselAlign = styled.View``;
+export const CarouselAlign = styled.View`
+    margin: 30px 0;
+`;

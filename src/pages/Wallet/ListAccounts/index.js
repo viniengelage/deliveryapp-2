@@ -1,15 +1,18 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { useTheme } from 'styled-components';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Carousel from 'react-native-snap-carousel';
+import * as Yup from 'yup';
 
 import { useNotification } from 'hooks/notification';
+import getValidationErrors from 'utils/getValidationsErrors';
 
 import Button from 'components/Button';
 import Currency from 'components/InputCurrency';
 import Picker from 'components/InputSelect';
 
+import { transactions } from 'services/api';
 import {
     Container,
     Header,
@@ -37,6 +40,7 @@ const ListAccounts = ({ wallets, balance, addAccount, token }) => {
     const [loading, setLoading] = useState(0);
 
     const { colors, shadow } = useTheme();
+    const { createNotification, removeNotification } = useNotification();
     const navigation = useNavigation();
 
     const handleOptions = useCallback(() => {
@@ -49,51 +53,64 @@ const ListAccounts = ({ wallets, balance, addAccount, token }) => {
             })
         );
 
-        console.log(options);
-
         return options;
     }, []);
 
-    const handleSubmit = useCallback(async (data) => {
+    const handleSubmit = useCallback(async (data, { reset }) => {
         console.log(data);
-        // setLoading(true);
-        // try {
-        //     const schema = Yup.object().shape({
-        //         amount: Yup.number('Digite apenas números')
-        //             .required('Este campo é necessário')
-        //             .typeError('Digite apenas números'),
-        //         wallet_token: Yup.string().required(),
-        //         type: Yup.string().required(),
-        //         trm_token: Yup.string().required(),
-        //     });
+        setLoading(true);
+        try {
+            const schema = Yup.object().shape({
+                ammount: Yup.number('Digite apenas números')
+                    .required('Este campo é necessário')
+                    .typeError('Digite apenas números'),
+                wallet_token: Yup.string().required(),
+                type: Yup.string().required(),
+                trm_token: Yup.string().required(),
+                account_id: Yup.number()
+                    .required()
+                    .typeError('Escolha um banco'),
+            });
 
-        //     const transaction = {
-        //         ...data,
-        //         wallet_token: token,
-        //         type: 'out',
-        //         trm_token: 'trm-64a3123f-f8ec-4508-83ec-bde672435da9',
-        //     };
-        //     console.log(transaction);
+            const transaction = {
+                ...data,
+                wallet_token: token,
+                type: 'out',
+                trm_token: 'trm-64a3123f-f8ec-4508-83ec-bde672435da9',
+            };
 
-        //     await schema.validate(transaction, {
-        //         abortEarly: false,
-        //     });
+            await schema.validate(transaction, {
+                abortEarly: false,
+            });
 
-        //     console.log('passou pelo schema');
+            await transactions.post('/wallets/transactions', transaction);
 
-        //     await transactions.post('/wallets/transactions', transaction);
+            reset();
 
-        //     setLoading(false);
-        // } catch (error) {
-        //     console.log(error);
-        //     if (error instanceof Yup.ValidationError) {
-        //         const errors = getValidationErrors(error);
-        //         formRef.current.setErrors(errors);
-        //         setLoading(false);
-        //         return;
-        //     }
-        //     setLoading(false);
-        // }
+            createNotification({
+                type: 'push',
+                text:
+                    'Seu pedido foi enviado ao financeiro, em breve será processado',
+                buttonText: ['Concluido'],
+                buttonAction: [
+                    () => {
+                        removeNotification();
+                        navigation.navigate('Home');
+                    },
+                ],
+            });
+
+            setLoading(false);
+        } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                const errors = getValidationErrors(error);
+                formRef.current.setErrors(errors);
+                setLoading(false);
+                return;
+            }
+            console.log(error);
+            setLoading(false);
+        }
     }, []);
 
     const renderAccounts = useCallback(
@@ -157,7 +174,7 @@ const ListAccounts = ({ wallets, balance, addAccount, token }) => {
                     <FormTitle>Retirar dinheiro</FormTitle>
                     <Form onSubmit={handleSubmit} ref={formRef}>
                         <Currency
-                            name="amount"
+                            name="ammount"
                             icon="money-check-alt"
                             placeholder="Digite o valor"
                         />
@@ -169,7 +186,9 @@ const ListAccounts = ({ wallets, balance, addAccount, token }) => {
                         />
                         <Button
                             loading={loading}
-                            onPress={() => formRef.current.submitForm()}
+                            onPress={() =>
+                                formRef.current.clearField('ammount')
+                            }
                         >
                             Solicitar
                         </Button>

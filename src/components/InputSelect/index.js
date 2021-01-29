@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { useField } from '@unform/core';
-import { Platform } from 'react-native';
 import { useTheme } from 'styled-components';
 
 import { Container, Icon, ErrorText } from './styles';
@@ -16,12 +15,9 @@ import { Container, Icon, ErrorText } from './styles';
 const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
     const inputElementRef = useRef(null);
 
-    const {
-        registerField,
-        defaultValue = options.length !== 0 && options[0].value,
-        fieldName,
-        error,
-    } = useField(name);
+    const { registerField, defaultValue = '', fieldName, error } = useField(
+        name
+    );
 
     const inputValueRef = useRef({ value: defaultValue });
 
@@ -41,6 +37,9 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
             name: fieldName,
             ref: inputValueRef.current,
             path: 'value',
+            clearValue() {
+                inputValueRef.current.value = '';
+            },
         });
     }, [fieldName, registerField]);
 
@@ -53,9 +52,9 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
     }, []);
 
     const getValueOptions = useCallback((index) => {
-        console.log(
-            `ò item clicado foi ${options[index].label} e seu valor é ${options[index].value}`
-        );
+        setIsFilled(true);
+        setIsFocused(true);
+        inputValueRef.current.value = options[index].value;
     }, []);
 
     return (
@@ -94,11 +93,12 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                     }}
                     dropdownStyle={[
                         {
-                            width: '70%',
                             justifyContent: 'center',
                             alignItems: 'center',
                             borderRadius: 12,
-                            height: 100,
+                            paddingHorizontal: 30,
+                            marginTop: 0,
+                            paddingTop: 0,
                         },
                         shadow,
                     ]}
@@ -108,12 +108,8 @@ const InputSelect = ({ name, icon, options, placeholder, ...rest }, ref) => {
                         borderWidth: 0,
                         paddingRight: 30,
                     }}
-                    onSelect={(index, item) => {
-                        console.log(item);
-                        setIsFilled(true);
-                        setIsFocused(true);
-                        getValueOptions(index);
-                    }}
+                    onSelect={getValueOptions}
+                    {...rest}
                 />
             </Container>
             {error && <ErrorText>{error}</ErrorText>}

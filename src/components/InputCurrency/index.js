@@ -11,8 +11,8 @@ import { useField } from '@unform/core';
 
 import { Container, Currency, Icon, ErrorText } from './styles';
 
-const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
-    const [formattedValue, setFormattedValue] = useState(0);
+const InputCurrency = ({ name, icon, placeholder, ...rest }, ref) => {
+    const [formattedValue, setFormattedValue] = useState();
 
     const inputElementRef = useRef(null);
     const { registerField, defaultValue = '', fieldName, error } = useField(
@@ -50,6 +50,9 @@ const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
             name: fieldName,
             ref: inputValueRef.current,
             path: 'value',
+            clearValue() {
+                inputValueRef.current.value = '';
+            },
         });
     }, [fieldName, registerField]);
 
@@ -73,8 +76,8 @@ const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
                 />
 
                 <Currency
-                    placeholderTextColor={colors.secundary}
                     ref={inputElementRef}
+                    placeholderTextColor={colors.secundary}
                     value={formattedValue}
                     onChangeValue={handleChange}
                     onFocus={handleInputFocused}
@@ -92,4 +95,4 @@ const InputBasic = ({ name, icon, placeholder, ...rest }, ref) => {
     );
 };
 
-export default forwardRef(InputBasic);
+export default forwardRef(InputCurrency);
